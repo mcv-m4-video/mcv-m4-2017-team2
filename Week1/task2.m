@@ -1,9 +1,12 @@
 clearvars;
 close all;
 
-addpath('functions_task1');
-dirGT = '../../highway/groundtruth/';
-dirResults = '../../results/highway/';
+addpath('../datasets');
+addpath('../utils');
+addpath('../week1');
+
+dirGT = '../datasets/cdvd/dataset/baseline/highway/groundtruth/';
+dirResults = '../datasets/cdvd/dataset/baseline/highway/results/';
 
 results_files = list_files(dirResults);
 files_number = size(results_files,1);
