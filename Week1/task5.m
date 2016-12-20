@@ -18,7 +18,7 @@ F = flow_read(strcat('../datasets/KITTI_devkit/data_stereo_flow/training/flow_no
 optical_flow_image = flow_to_color(F);  % computes color representation of optical flow field
 
 figure(1);
-subplot(2,1,1); imshow(original_image); title('Original Image');
-subplot(2,1,2); imshow(optical_flow_image); title('Color representation of optical flow field');
-imshow(I);
+subplot(3,1,1); imshow(original_image); title('Original Image');
+subplot(3,1,2); imshow(optical_flow_image); title('Color representation of optical flow field');
+subplot(3,1,3); quiver(F(:,:,1), F(:,:,2)); title('Quiver plot');
 
