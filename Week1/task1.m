@@ -32,8 +32,8 @@ for i=1:files_number
     file_number = results_files(i).name(8:13);%example: take '001201' from 'test_A_001201.png'
     
     if file_class == 'A'
-        gt_A = imread(strcat(dirGT,'gt',file_number,'.png')); % Read the A image
-        test_A = imread(strcat(dirResults,'test_A_',file_number,'.png')); % Read the GT image
+        gt_A = imread(strcat(dirGT,'gt',file_number,'.png')); % Read the GT image
+        test_A = imread(strcat(dirResults,'test_A_',file_number,'.png')); % Read the A image
         gt_A = gt_A >= motion; %binarize gt mask
         [TP, TN, FP, FN] = get_metrics (gt_A, test_A);
         TP_A = TP_A + TP;
@@ -41,8 +41,8 @@ for i=1:files_number
         FN_A = FN_A + FN;
         TN_A = TN_A + TN;
     else % B
-        gt_B = imread(strcat(dirGT,'gt',file_number,'.png')); % Read the B image
-        test_B = imread(strcat(dirResults,'test_B_',file_number,'.png')); % Read the GT image
+        gt_B = imread(strcat(dirGT,'gt',file_number,'.png')); % Read the GT image
+        test_B = imread(strcat(dirResults,'test_B_',file_number,'.png')); % Read the B image
         gt_B = gt_B >= motion; %binarize gt mask
         [TP, TN, FP, FN] = get_metrics (gt_B, test_B);
         TP_B = TP_B + TP;
