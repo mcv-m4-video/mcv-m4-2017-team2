@@ -1,7 +1,7 @@
 clear all; 
 close all;
 
-addpath('../KITTI_devkit');
+addpath('../datasets/KITTI_devkit');
 
 %for sequence 45
 seq_1_gt = flow_read('../../data_stereo_flow/training/flow_noc/000045_10.png');
