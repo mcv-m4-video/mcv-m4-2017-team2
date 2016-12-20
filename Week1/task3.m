@@ -18,8 +18,9 @@ seq_2_estimated = flow_read('../datasets/KITTI_devkit/results_opticalflow_kitti/
 [error2,F2_gt_val] = flow_error_map (seq_2_gt,seq_2_estimated);
 
 %MSEN
-msen1 = sum(sum(error1))/numel(error1);%mean of the matrix elements 
-msen2 = sum(sum(error2))/numel(error2);
+msen1 = sum(error1(:))/sum(error1(:)>0);%mean of the matrix elements 
+msen2 = sum(error2(:))/sum(error2(:)>0);
+
 
 %PEPN
 pepn1 = length(find(error1>3))/length(find(F1_gt_val));
@@ -34,15 +35,15 @@ pepn1
 disp('PEPN for sequence 157')
 pepn2
 
-disp('Error visualization for sequence 45')
-F1_err = flow_error_image(seq_1_gt,seq_1_estimated);
-figure,imshow([flow_to_color([seq_1_estimated;seq_1_gt]);F1_err]);
-title(sprintf('Error for seq 45: %.2f %%',pepn1*100));
-figure,flow_error_histogram(seq_1_gt,seq_1_estimated);
-
-
-disp('Error visualization for sequence 157')
-F2_err = flow_error_image(seq_2_gt,seq_2_estimated);
-figure,imshow([flow_to_color([seq_2_estimated;seq_2_gt]);F2_err]);
-title(sprintf('Error for seq 157: %.2f %%',pepn2*100));
-figure,flow_error_histogram(seq_2_gt,seq_2_estimated);
+% disp('Error visualization for sequence 45')
+% F1_err = flow_error_image(seq_1_gt,seq_1_estimated);
+% figure,imshow([flow_to_color([seq_1_estimated;seq_1_gt]);F1_err]);
+% title(sprintf('Error for seq 45: %.2f %%',pepn1*100));
+% figure,flow_error_histogram(seq_1_gt,seq_1_estimated);
+% 
+% 
+% disp('Error visualization for sequence 157')
+% F2_err = flow_error_image(seq_2_gt,seq_2_estimated);
+% figure,imshow([flow_to_color([seq_2_estimated;seq_2_gt]);F2_err]);
+% title(sprintf('Error for seq 157: %.2f %%',pepn2*100));
+% figure,flow_error_histogram(seq_2_gt,seq_2_estimated);
