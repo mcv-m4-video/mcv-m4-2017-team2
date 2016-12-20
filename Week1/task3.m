@@ -1,6 +1,7 @@
 clear all; close all;
 
 addpath('../datasets');
+addpath('../datasets/KITTI_devkit');
 addpath('../utils');
 addpath('../week1');
 
