@@ -1,15 +1,17 @@
-clear all; 
-close all;
+clear all; close all;
 
-addpath('../KITTI_devkit');
+addpath('../datasets');
+addpath('../datasets/KITTI_devkit');
+addpath('../utils');
+addpath('../week1');
 
 %for sequence 45
-seq_1_gt = flow_read('../../data_stereo_flow/training/flow_noc/000045_10.png');
-seq_1_estimated = flow_read('../../results_opticalflow_kitti/results/LKflow_000045_10.png');
+seq_1_gt = flow_read('../datasets/KITTI_devkit/data_stereo_flow/training/flow_noc/000045_10.png');
+seq_1_estimated = flow_read('../datasets/KITTI_devkit/results_opticalflow_kitti/results/LKflow_000045_10.png');
 
 %for sequence 157
-seq_2_gt = flow_read('../../data_stereo_flow/training/flow_noc/000157_10.png');
-seq_2_estimated = flow_read('../../results_opticalflow_kitti/results/LKflow_000157_10.png');
+seq_2_gt = flow_read('../datasets/KITTI_devkit/data_stereo_flow/training/flow_noc/000157_10.png');
+seq_2_estimated = flow_read('../datasets/KITTI_devkit/results_opticalflow_kitti/results/LKflow_000157_10.png');
 
 %get the error mat between the estimated motion and gt motion: 
 [error1,F1_gt_val] = flow_error_map (seq_1_gt,seq_1_estimated);
