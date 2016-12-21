@@ -13,6 +13,13 @@ files_number = size(results_files,1);
 TP_A = 0; FP_A = 0; FN_A = 0; TN_A = 0;
 TP_B = 0; FP_B = 0; FN_B = 0; TN_B = 0;
 
+% The groundtruth images contain 5 labels namely:
+% 0 : Static
+% 50 : Hard shadow
+% 85 : Outside region of interest
+% 170 : Unknown motion (usually around moving objects, due to semi-transparency and motion blur)
+% 255 : Motion
+
 motion = 170;
 count_a=1;
 count_b=1;
