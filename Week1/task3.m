@@ -17,6 +17,8 @@ seq_2_estimated = flow_read('../datasets/KITTI_devkit/results_opticalflow_kitti/
 [error1,F1_gt_val] = flow_error_map (seq_1_gt,seq_1_estimated);
 [error2,F2_gt_val] = flow_error_map (seq_2_gt,seq_2_estimated);
 
+
+
 %MSEN
 msen1 = sum(error1(:))/sum(error1(:)>0);%mean of the matrix elements 
 msen2 = sum(error2(:))/sum(error2(:)>0);
@@ -26,24 +28,33 @@ msen2 = sum(error2(:))/sum(error2(:)>0);
 pepn1 = length(find(error1>3))/length(find(F1_gt_val));
 pepn2 = length(find(error2>3))/length(find(F2_gt_val));
 
-disp('MSEN for sequence 45')
-msen1
-disp('MSEN for sequence 157')
-msen2
-disp('PEPN for sequence 45')
-pepn1
-disp('PEPN for sequence 157')
-pepn2
+fprintf('\t\tWEEK 1 TASK 3 RESULTS\n');
+fprintf('Sequence\t\tMSEN\t\tPEPN\n');
+fprintf('--------------------------------------------------\n');
+fprintf(['Seq 45\t\t', num2str(msen1), '\t\t', num2str(pepn1*100),'\n']);
+fprintf(['Seq 157\t\t', num2str(msen2), '\t\t', num2str(pepn2*100),'\n']);
 
-% disp('Error visualization for sequence 45')
-% F1_err = flow_error_image(seq_1_gt,seq_1_estimated);
-% figure,imshow([flow_to_color([seq_1_estimated;seq_1_gt]);F1_err]);
-% title(sprintf('Error for seq 45: %.2f %%',pepn1*100));
+disp('Error visualization for sequence 45')
+F1_err = flow_error_image(seq_1_gt,seq_1_estimated,0);
+figure,imshow(F1_err);
+% title(sprintf('PEPN Error for seq 45: %.2f %%',pepn1*100));
+%msen histogram
+msen1reshaped = reshape(error1,[numel(error1),1]);
+figure,
+histogram(msen1reshaped(msen1reshaped>0),50,'Normalization','probability'),
+xlabel('MSEN value'),
+ylabel('Percentage of pixels'),
+title('Sequence 45');
 % figure,flow_error_histogram(seq_1_gt,seq_1_estimated);
-% 
-% 
-% disp('Error visualization for sequence 157')
-% F2_err = flow_error_image(seq_2_gt,seq_2_estimated);
-% figure,imshow([flow_to_color([seq_2_estimated;seq_2_gt]);F2_err]);
-% title(sprintf('Error for seq 157: %.2f %%',pepn2*100));
-% figure,flow_error_histogram(seq_2_gt,seq_2_estimated);
+
+disp('Error visualization for sequence 157')
+F2_err = flow_error_image(seq_2_gt,seq_2_estimated,0);
+figure,imshow(F2_err);
+% title(sprintf('PEPN Error for seq 157: %.2f %%',pepn2*100));
+%msen histogram
+msen2reshaped = reshape(error2,[numel(error2),1]);
+figure,
+histogram(msen2reshaped(msen2reshaped>0),50,'Normalization','probability'),
+xlabel('MSEN value'),
+ylabel('Percentage of pixels'),
+title('Sequence 157');;
