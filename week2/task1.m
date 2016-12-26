@@ -22,32 +22,15 @@ foreground = 250;
 
 [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
-%Alpha parameter for sigma weight in background comparison
-alpha = 2.5;
+%Alpha parameter for sigma weight in background comparison (for frame by
+%frame plot set alpha to scalar, for threshold sweep set alpha to vector)
+alpha_vect = 1.75; %0.25:0.25:10;
 
-%detect foreground and compare results
-for i=1:(round(range_images/2))
-    index = i + (start_img + range_images/2) - 1;
-    file_number = input_files(index).name(3:8);
-    test_backg_in(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
-    detection(:,:,i) = abs(mu_matrix-test_backg_in(:,:,i)) >= (alpha * (sigma_matrix + 2));
-    gt = imread(strcat(dirGT,'gt',file_number,'.png'));
-    gt_back = gt <= background;
-    gt_fore = gt <= foreground;
-    [TP, TN, FP, FN] = get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
-    TPvector(i) = TP;
-    TNvector(i) = TN;
-    FPvector(i) = FP;
-    FNvector(i) = FN;
-    [precision(i), recall(i), F1(i)] = evaluation_metrics(TP,TN,FP,FN);
-end
 
-x= 1:range_images/2;
-figure(1)
-plot(x, transpose(precision), x, transpose(recall), x, transpose(F1));
-title('Metrics')
-xlabel('Frame')
-ylabel('Measure')
-legend('Precision','Recall','F1');
+%Use when alpha_vect is a single value
+single_alpha(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT);
+
+%Use when alpha_vect is a vector of thresholds
+%[time] = alpha_sweep(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
 
 end
