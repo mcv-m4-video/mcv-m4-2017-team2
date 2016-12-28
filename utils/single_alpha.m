@@ -11,9 +11,9 @@ v.FrameRate = 15;
         test_backg_in(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
         detection(:,:,i) = abs(mu_matrix-test_backg_in(:,:,i)) >= (alpha * (sigma_matrix + 2));
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
-        gt_back = gt <= background;
-        gt_fore = gt <= foreground;
-        [TP, TN, FP, FN] = get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
+        %gt_back = gt <= background;
+        gt_fore = gt >= foreground;
+        [TP, TN, FP, FN] = get_metrics( gt_fore, detection(:,:,i));%get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
         frame(:,:,i) = mat2gray(detection(:,:,i));
         
         

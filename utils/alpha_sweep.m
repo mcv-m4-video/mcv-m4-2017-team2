@@ -1,5 +1,5 @@
 %function for sweeping through several thresholds to compare performance
-function [toc] = alpha_sweep(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
+function [time] = alpha_sweep(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
 tic
 for n=1:size(alpha_vect,2)
     
@@ -19,7 +19,7 @@ for n=1:size(alpha_vect,2)
         detection(:,:,i) = abs(mu_matrix-test_backg_in(:,:,i)) >= (alpha * (sigma_matrix + 2));
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
         gt_back = gt <= background;
-        gt_fore = gt <= foreground;
+        gt_fore = gt >= foreground;
         [TP, TN, FP, FN] = get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
 
         %option of getting overall metrics
@@ -31,16 +31,33 @@ for n=1:size(alpha_vect,2)
 
     %global metrics for threshold sweep:
     [precision(n), recall(n), F1(n)] = evaluation_metrics(TP_global,TN_global,FP_global,FN_global);
+    TP_(n) = TP_global;
+    TN_(n) = TN_global;
+    FP_(n) = FP_global;
+    FN_(n) = FN_global;
 
 end    
 
-toc
+time = toc;
 
-x= 1:size(alpha_vect,2);
+x= alpha_vect;%1:size(alpha_vect,2);
 figure(1)
 plot(x, transpose(precision), x, transpose(recall), x, transpose(F1));
 title('Metrics')
-xlabel('Frame')
+xlabel('Threshold')
 ylabel('Measure')
 legend('Precision','Recall','F1');
+
+figure(2)
+plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
+title('Metrics 2')
+xlabel('Threshold')
+ylabel('Measure')
+legend('TP','TN','FP','FN');
+
+figure(3)
+plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
+xlabel('Recall')
+ylabel('Precision')
+legend('Recall vs Precision','Recall x Precision');
 end
