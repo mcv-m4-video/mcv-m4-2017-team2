@@ -1,6 +1,6 @@
 function task1
 
-clear all; close all;
+close all;
 
 addpath('../datasets');
 addpath('../utils');
@@ -25,10 +25,11 @@ foreground = 250;
 %Alpha parameter for sigma weight in background comparison (for frame by
 %frame plot set alpha to scalar, for threshold sweep set alpha to vector)
 alpha_vect = 0:0.25:5;
+alpha_vect = 0;
 
 
 %Use when alpha_vect is a single value
-% single_alpha(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT);
+single_alpha(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT);
 
 %Use when alpha_vect is a vector of thresholds
 [time] = alpha_sweep(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)

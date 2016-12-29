@@ -88,28 +88,28 @@ title('TP & TF')
 legend('Total Foreground pixels', 'True Positives test A', 'True Positives test B', 'North', 'Location', 'North')
 axis([1201 1400 0 max(TFG)])
 
-%%%%%%%%%%
-figure()
-% precision_B(isnan(precision_B)) = 0;
-max_precision = max([precision_A, precision_B]);
-min_precision = min([precision_A, precision_B]);
-plot(frames, precision_A, 'b', 'LineWidth', 2)
-hold on
-plot(frames, precision_B, 'r', 'LineWidth', 2)
-title('Precision')
-% legend('Precision test A', 'Precision test B', 'Location', 'southeast')
-axis([1201 1400 min_precision max_precision])
-
-figure()
-max_recall = max([recall_A, recall_B]);
-min_recall = min([recall_A, recall_B]);
-plot(frames, recall_A, 'b', 'LineWidth', 2)
-hold on
-plot(frames, recall_B, 'r', 'LineWidth', 2)
-title('Recall')
-% legend('Recall test A', 'Recall test B', 'Location', 'southeast')
-axis([1201 1400 min_recall max_recall])
-%%%%%%
+% %%%%%%%%%%
+% figure()
+% % precision_B(isnan(precision_B)) = 0;
+% max_precision = max([precision_A, precision_B]);
+% min_precision = min([precision_A, precision_B]);
+% plot(frames, precision_A, 'b', 'LineWidth', 2)
+% hold on
+% plot(frames, precision_B, 'r', 'LineWidth', 2)
+% title('Precision')
+% % legend('Precision test A', 'Precision test B', 'Location', 'southeast')
+% axis([1201 1400 min_precision max_precision])
+% 
+% figure()
+% max_recall = max([recall_A, recall_B]);
+% min_recall = min([recall_A, recall_B]);
+% plot(frames, recall_A, 'b', 'LineWidth', 2)
+% hold on
+% plot(frames, recall_B, 'r', 'LineWidth', 2)
+% title('Recall')
+% % legend('Recall test A', 'Recall test B', 'Location', 'southeast')
+% axis([1201 1400 min_recall max_recall])
+% %%%%%%
 
 
 %%%%%%
