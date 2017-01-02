@@ -1,3 +1,4 @@
 # Ignore datasets images
 datasets/cdvd/dataset/*
 datasets/KITTI_devkit/data_stereo_flow/*
+week2/results/*

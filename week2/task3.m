@@ -19,9 +19,9 @@ videoname = 'highway';
 T1 = 1050;
 T2 = 1350;
 
-Threshold = 3;
-K = 5;
-Rho = 0.15;
+Threshold = 1.25;
+K = 9;
+Rho = 0.25;
 THFG = 0.25;
 
 
@@ -34,15 +34,15 @@ write_sequence(Sequence, dirResults, T1);
 % Evaluate detection:
 [precision, recall, F1] = test_sequence(dirResults, videoname);
 
-% % Write video:
-% v = VideoWriter('stgm.avi','Grayscale AVI');
-% v.FrameRate = 15;
-% open(v)
-% for i = 1:size(Sequence,3)
-%     frame = mat2gray(Sequence(:,:,i));
-%     writeVideo(v,frame)
-% end
-% close(v)
+% Write video:
+v = VideoWriter('stgm.avi','Grayscale AVI');
+v.FrameRate = 15;
+open(v)
+for i = 1:size(Sequence,3)
+    frame = mat2gray(Sequence(:,:,i));
+    writeVideo(v,frame)
+end
+close(v)
 
 
 
