@@ -4,6 +4,16 @@ function single_alpha(alpha, mu_matrix, sigma_matrix, range_images, start_img, d
 v = VideoWriter('detection.avi','Grayscale AVI');
 v.FrameRate = 15;
 
+TP = 0;
+TN = 0;
+FP = 0;
+FN = 0;
+
+TPvector = zeros(size(round(range_images/2)));
+TNvector = zeros(size(round(range_images/2)));
+FPvector = zeros(size(round(range_images/2)));
+FNvector = zeros(size(round(range_images/2)));
+
 %detect foreground and compare results
     for i=1:(round(range_images/2))
         index = i + (start_img + range_images/2) - 1;
@@ -35,7 +45,7 @@ v.FrameRate = 15;
     x= 1:range_images/2;
     figure(1)
     plot(x, transpose(precision), x, transpose(recall), x, transpose(F1));
-    title('Metrics')
+    title('Metrics for alpha = 2')
     xlabel('Frame')
     ylabel('Measure')
     legend('Precision','Recall','F1');

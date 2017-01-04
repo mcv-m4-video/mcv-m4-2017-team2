@@ -6,6 +6,10 @@ precision = zeros(1,size(alpha_vect,2));
 recall = zeros(1,size(alpha_vect,2));
 F1 = zeros(1,size(alpha_vect,2));
 
+TP_ = [];
+TN_ = [];
+FP_ = [];
+FN_ = [];
 
 for n=1:size(alpha_vect,2)
     
@@ -26,8 +30,8 @@ for n=1:size(alpha_vect,2)
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
         gt_back = gt <= background;
         gt_fore = gt >= foreground;
-%         [TP, TN, FP, FN] = get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
-        [TP, TN, FP, FN] = get_metrics(gt_fore, detection(:,:,i));
+        [TP, TN, FP, FN] = get_metrics_2val (gt_back, gt_fore, detection(:,:,i));
+%         [TP, TN, FP, FN] = get_metrics_2val(gt_fore, detection(:,:,i));
 
         %option of getting overall metrics
         TP_global = TP_global + TP;
@@ -53,21 +57,22 @@ plot(x, precision, 'k');
 hold on
 plot(x, recall, 'r');
 plot(x, F1, 'b');
-title('Metrics')
+title('Precision, Recall & F1 vs Threshold')
 xlabel('Threshold')
 ylabel('Measure')
 legend('Precision','Recall','F1');
 
 figure(2)
 plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
-title('Metrics 2')
+title('TP, TN, FP & FN vs Threshold')
 xlabel('Threshold')
-ylabel('Measure')
+ylabel('Pixels')
 legend('TP','TN','FP','FN');
 
 figure(3)
 plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
+title('Recall vs Precision & AUC');
 xlabel('Recall')
 ylabel('Precision')
-legend('Recall vs Precision','Recall x Precision');
+legend('Recall vs Precision','Area under the curve');
 end
