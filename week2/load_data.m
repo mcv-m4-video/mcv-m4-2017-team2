@@ -1,4 +1,4 @@
-function [start_img, range_images, dirInputs] = load_data(data)
+function [start_img, range_images, dirInputs, dirGT] = load_data(data)
 
 %First image from each set:
 start_highway = 1050;
@@ -19,6 +19,7 @@ switch data
         range_images = range_highway;
         %Write the dataset option from the 3 above:
         dirInputs = '../datasets/cdvd/dataset/baseline/highway/input/';
+        dirGT = '../datasets/cdvd/dataset/baseline/highway/groundtruth/';
         
     case 'fall'
         %First image to use from set:
@@ -27,6 +28,7 @@ switch data
         range_images = range_fall;
         %Write the dataset option from the 3 above:
         dirInputs = '../datasets/cdvd/dataset/dynamicBackground/fall/input/';
+        dirGT = '../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/';
         
     case 'traffic'
         %First image to use from set:
@@ -35,6 +37,7 @@ switch data
         range_images = range_traffic;
         %Write the dataset option from the 3 above:
         dirInputs = '../datasets/cdvd/dataset/cameraJitter/traffic/input/';
+        dirGT = '../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/';
 end
 
 end
