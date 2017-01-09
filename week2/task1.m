@@ -8,7 +8,7 @@ addpath('../week2');
 
 %Datasets to use 'highway' , 'fall' or 'traffic'
 %Choose dataset images to work on from the above:
-data = 'fall';
+data = 'highway';
 
 [start_img, range_images, dirInputs, dirGT] = load_data(data);
 
@@ -16,8 +16,8 @@ data = 'fall';
 input_files = list_files(dirInputs);
 
 %Evaluating metrics
-background = 55;
-foreground = 250;
+background = 50;
+foreground = 255;
 
 [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
