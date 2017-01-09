@@ -20,14 +20,43 @@ function task2
     background = 55;
     foreground = 250;
 
+    % Either perform an exhaustive grid search to find the best alpha and rho,
+    % or just use the adaptive model if they are already computed.
+    exhaustive_search = false;
+    if exhaustive_search
+        exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
+    else
+        adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
+    end
+
+end
+
+
+function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground)
+    [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
+    alpha_val = 4.5;
+    rho_val = 0.35;
+    create_animated_gif = false;
+    [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
+
+    % Show results in tabular format
+    fprintf('\tWEEK 2 TASK 2 RESULTS\n');
+    fprintf('--------------------------------------------------\n');
+    fprintf(['Alpha = \t', num2str(alpha_val),'\n']);
+    fprintf(['Rho = \t\t', num2str(rho_val),'\n']);
+    fprintf(['Precision = \t', num2str(mean(precision)),'\n']);
+    fprintf(['Recall = \t', num2str(mean(recall)),'\n']);
+    fprintf(['F1 = \t\t', num2str(mean(F1)),'\n']);
+end
+
+
+function exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground)
     %% train model with the first 50% of the images
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
     %% adaptive modelling with the last 50% of the images
     alpha_vals = 0.25:0.25:10;
     rho_vals = 0.025:0.025:1;
-    % alpha_vals = [2.75, 3];
-    % rho_vals = [0.2, 0.5, 0.9];
     create_animated_gif = false;
     results_f1 = zeros(size(rho_vals, 2), size(alpha_vals, 2));
     i = 1;
