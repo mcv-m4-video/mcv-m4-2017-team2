@@ -22,11 +22,11 @@ for n=1:size(alpha_vect,2)
     FN_global = 0;
     
     %detect foreground and compare results
-    for i=1:(round(range_images/2))
+    for i=1:(round(range_images/2)+1)
         index = i + (start_img + range_images/2) - 1;
         file_number = input_files(index).name(3:8);
         test_backg_in(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
-        detection(:,:,i) = abs(mu_matrix-test_backg_in(:,:,i)) >= (alpha * (sigma_matrix + 2));
+        detection(:,:,i) = (abs(test_backg_in(:,:,i)-mu_matrix) >= (alpha * (sigma_matrix + 2)));
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
         gt_back = gt <= background;
         gt_fore = gt >= foreground;
@@ -51,9 +51,9 @@ end
 
 time = toc;
 
-x= alpha_vect;%1:size(alpha_vect,2);
+x= alpha_vect;
 figure(1)
-plot(x, precision, 'k', x, recall, 'r',  x, F1, 'b');
+plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
 title('Precision, Recall & F1 vs Threshold')
 xlabel('Threshold')
 ylabel('Measure')

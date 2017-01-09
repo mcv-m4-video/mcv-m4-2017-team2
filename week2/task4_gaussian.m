@@ -14,8 +14,8 @@ data = 'fall';
 input_files = list_files(dirInputs);
 
 %Evaluating metrics
-background = 55;
-foreground = 250;
+background = 50;
+foreground = 255;
 
 %color space
 colorspace = 'YUV'; % 'YUV' 'HSV' 
