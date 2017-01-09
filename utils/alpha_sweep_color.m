@@ -38,9 +38,9 @@ for n=1:size(alpha_vect,2)
             error('colorspace not recognized');
         end
         
-        detection(:,:,i) = abs(mu_matrix(:,:,1)-test_backg_in(:,:,1,i)) >= (alpha * (sigma_matrix(:,:,1) + 2)) & ...
-            abs(mu_matrix(:,:,2)-test_backg_in(:,:,2,i)) >= (alpha * (sigma_matrix(:,:,2) + 2)) & ...
-            abs(mu_matrix(:,:,3)-test_backg_in(:,:,3,i)) >= (alpha * (sigma_matrix(:,:,3) + 2)) ;
+        detection(:,:,i) = abs(test_backg_in(:,:,1,i)-mu_matrix(:,:,1)) >= (alpha * (sigma_matrix(:,:,1) + 2)) & ...
+            abs(test_backg_in(:,:,2,i)-mu_matrix(:,:,2)) >= (alpha * (sigma_matrix(:,:,2) + 2)) & ...
+            abs(test_backg_in(:,:,3,i)-mu_matrix(:,:,3)) >= (alpha * (sigma_matrix(:,:,3) + 2)) ;
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
         gt_back = gt <= background;
         gt_fore = gt >= foreground;
@@ -67,7 +67,7 @@ time = toc;
 
 x= alpha_vect;%1:size(alpha_vect,2);
 figure(1)
-plot(x, precision, 'k', x, recall, 'r',  x, F1, 'b');
+plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
 title('Precision, Recall & F1 vs Threshold')
 xlabel('Threshold')
 ylabel('Measure')
