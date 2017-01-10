@@ -36,3 +36,9 @@ Task 3
 Task 4
 ------
 
+Task4 has 2 main files: 
+	* task4_adaptative.m for color adapted bg detection adaptative 
+	* task4_non_adaptative.m for color adapted bg detection non_adaptative
+	
+* train_background_color: for training mu_matrix and sigma_matrix for each channel
+* alpha_sweep_color: for finding the best alpha for color bg detection non_adaptative
