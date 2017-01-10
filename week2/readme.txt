@@ -3,6 +3,23 @@ README for week 2
 
 Task 1
 ------
+The main file of task 1 is task1.m, the one to be executed.
+
+Settings:
+
+-First select the dataset in wich you desire to work by assigning variable 'data' its name in string format, for example: data = 'highway';
+
+-Grountruth values for background and foreground are assigned in the variables of the same name.
+
+-Then yout may choose to run detection using a particular alpha value, or may sweep through a series of alphas in order to compare results.
+
+For using a single alpha simply give variable 'alpha_vect' a single value, check that 'single_alpha()' function is uncommented and 'alpha_sweep() is commented.
+
+
+For sweeping, assign 'alpha_vect' a vector containing the values to evaluate, check that function 'alpha_sweep()' is uncommented and 'single_alpha()' is commented.
+
+ 
+
 
 
 Task 2
@@ -22,15 +39,6 @@ Settings (function.param):
 
 Task 3
 ------
-
-    * task3.m
-        Computes the detection with Stauffer and Grimson for the specified parameters and video seuqence.
-
-    * task3_tune.m
-        Adjust the parameters for Stauffer and Grimson, for a given number of gaussians, doing a search over a grid.
-
-    * task3_tune2.m
-        Adjust the parameters for Stauffer and Grimson, for a given number of gaussians, with gradient ascent.
 
 
 Task 4
