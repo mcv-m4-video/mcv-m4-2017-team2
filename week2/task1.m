@@ -8,7 +8,7 @@ addpath('../week2');
 
 %Datasets to use 'highway' , 'fall' or 'traffic'
 %Choose dataset images to work on from the above:
-data = 'traffic';
+data = 'highway';
 
 [start_img, range_images, dirInputs, dirGT] = load_data(data);
 

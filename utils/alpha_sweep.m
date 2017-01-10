@@ -56,7 +56,7 @@ save(strcat(data,'_task1_results.mat'),'TP_','TN_','FP_','FN_', 'precision', 're
 x= alpha_vect;
 figure(1)
 plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
-title(strcat(data,{'Precision, Recall & F1 vs Threshold for dataset '},data));
+title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
 xlabel('Threshold');
 ylabel('Measure');
 legend('Precision','Recall','F1');
