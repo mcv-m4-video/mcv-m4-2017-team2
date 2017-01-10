@@ -20,8 +20,8 @@ colorspaces = {'RGB','HSV','YUV'};
 f1 = zeros(numel(colorspaces),numel(datasets));
 
 %Those values came from the results of task 2 grid search
-alpha_x_dataset = [4.5, 2.4, 5.9];
-rho_x_dataset = [0.35, 0.32, 0.41];
+alpha_x_dataset = [6.25, 4.5, 5.75];
+rho_x_dataset = [0.025, 0.35, 0.2];
 
 for d=1:numel(datasets)
     data = datasets{d};
@@ -37,16 +37,19 @@ for d=1:numel(datasets)
 
     end
 end
-save('non_adaptative.mat','alpha','f1');
+save('adaptative_color.mat','alpha','f1');
+%gray results from task2
+gray = [ 0.4858, 0.7341, 0.5608];
+colorspaces = {'GRAY','RGB','HSV','YUV'};
 %visualization
 figure;
 rgb = f1(1,:); hsv = f1(2,:); yuv = f1(3,:);
-Y=[rgb;hsv;yuv].';
+Y=[gray;rgb;hsv;yuv].';
 h = bar(Y)
 set(gca, 'XTick', 1:3, 'XTickLabel', datasets);
 % color_space_test=num2str([1:3].','Job %d');
 legend(colorspaces','location','northeast')
-title('F1 measure per colorspace for recursive bg detection')
+title('F1 measure per colorspace for adaptative bg detection')
 end
 
 

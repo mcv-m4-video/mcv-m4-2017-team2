@@ -17,7 +17,7 @@ foreground = 255;
 colorspaces = {'RGB','HSV','YUV'};
 
 %mat for save the values of f1 and alpha for each dataset in relation to
-%color space
+color space
 f1 = zeros(numel(colorspaces),numel(datasets));
 alpha = zeros(numel(colorspaces),numel(datasets));
 
@@ -41,13 +41,16 @@ for d=1:numel(datasets)
 end
 
 save('non_adaptative_color.mat','f1','alpha');
-% load('non_adaptative.mat');
+% load('non_adaptative_color.mat');
+%gray results from task1
+gray = [0.6624,0.4547,0.4939];
+colorspaces = {'GRAY','RGB','HSV','YUV'};
 %visualization
 figure;
 rgb = f1(1,:); hsv = f1(2,:); yuv = f1(3,:);
-Y=[rgb;hsv;yuv].';
+Y=[gray;rgb;hsv;yuv].';
 h = bar(Y)
 set(gca, 'XTick', 1:3, 'XTickLabel', datasets);
 legend(colorspaces','location','northeast')
-title('F1 measure per colorspace for non-recursive bg detection')
+title('F1 measure per colorspace for non-adaptative bg detection')
 end
