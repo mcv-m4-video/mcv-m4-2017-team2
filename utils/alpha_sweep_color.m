@@ -1,6 +1,5 @@
 %function for sweeping through several thresholds to compare performance
-function time = alpha_sweep_color(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, colorspace)
-tic
+function [best_alpha, best_f1] = alpha_sweep_color(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, colorspace)
 
 precision = zeros(1,size(alpha_vect,2));
 recall = zeros(1,size(alpha_vect,2));
@@ -34,6 +33,8 @@ for n=1:size(alpha_vect,2)
             test_backg_in(:,:,:,i) = rgb2yuv(test_backg_in(:,:,:,i));
         elseif strcmp(colorspace,'HSV')
             test_backg_in(:,:,:,i) = double(rgb2hsv(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+            test_backg_in(:,:,:,i) = 255.* test_backg_in(:,:,:,i); 
+    
         else
             error('colorspace not recognized');
         end
@@ -63,27 +64,38 @@ for n=1:size(alpha_vect,2)
     
 end
 
-time = toc;
 
-x= alpha_vect;%1:size(alpha_vect,2);
-figure(1)
-plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
-title('Precision, Recall & F1 vs Threshold')
-xlabel('Threshold')
-ylabel('Measure')
-legend('Precision','Recall','F1');
+[best_f1, f1_idx] = max(F1);
+best_alpha = alpha_vect(f1_idx);
 
-figure(2)
-plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
-title('TP, TN, FP & FN vs Threshold')
-xlabel('Threshold')
-ylabel('Pixels')
-legend('TP','TN','FP','FN');
+fprintf('\tWEEK 2 TASK 4 BG NON ADAPTATIVE RESULTS\n');
+fprintf('--------------------------------------------------\n');
+fprintf(['Alpha = \t', num2str(best_alpha),'\n']);
+fprintf(['Precision = \t', num2str(precision(f1_idx)),'\n']);
+fprintf(['Recall = \t', num2str(recall(f1_idx)),'\n']);
+fprintf(['F1 = \t\t', num2str(best_f1),'\n']);
 
-figure(3)
-plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
-title('Recall vs Precision & AUC');
-xlabel('Recall')
-ylabel('Precision')
-legend('Recall vs Precision','Area under the curve');
+% graphs
+% x= alpha_vect;%1:size(alpha_vect,2);
+% figure(1)
+% plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
+% title('Precision, Recall & F1 vs Threshold')
+% xlabel('Threshold')
+% ylabel('Measure')
+% legend('Precision','Recall','F1');
+% 
+% figure(2)
+% plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
+% title('TP, TN, FP & FN vs Threshold')
+% xlabel('Threshold')
+% ylabel('Pixels')
+% legend('TP','TN','FP','FN');
+% 
+% figure(3)
+% plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
+% title('Recall vs Precision & AUC');
+% xlabel('Recall')
+% ylabel('Precision')
+% legend('Recall vs Precision','Area under the curve');
+
 end
