@@ -12,12 +12,13 @@ function task2
     %% load data
     % Datasets to use 'highway', 'fall' or 'traffic'
     % Choose dataset images to work on from the above:
-    data = 'fall';
+    data = 'highway';
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
 
-    % dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
-    dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
+    dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
+    % dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
+    % dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
     background = 55;
     foreground = 250;
 
