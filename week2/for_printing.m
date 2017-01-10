@@ -28,3 +28,33 @@ fall=[xmaxfall,ymaxfall]
 highway=[xmaxh,ymaxh]
 
 traffic=[xmaxtraf,ymaxtraf]
+
+
+TP_h= TP_;
+FP_h=FP_;
+FN_h=FN_;
+TN_h=TN_;
+
+TP_t= TP_;
+FP_t=FP_;
+FN_t=FN_;
+TN_t=TN_;
+
+TP_f= TP_;
+FP_f=FP_;
+FN_f=FN_;
+TN_f=TN_;
+
+figure(3)
+plot((FP_h./(FP_h +TN_h)),TP_h./(TP_h+FN_h),'b',(FP_t./(FP_t +TN_t)),TP_t./(TP_t+FN_t),'r',(FP_f./(FP_f +TN_f)),TP_f./(TP_f+FN_f),'g')
+title 'ROC curve'
+xlabel('FP ratio')
+ylabel('TP ratio')
+legend('highway','traffic', 'fall');
+
+figure(3)
+plot(recall_h,pres_h,'b',recall_t,pres_t,'r',recall_f,pres_f,'g')
+title 'P/R curve'
+xlabel('Recall')
+ylabel('Precision')
+legend('highway','traffic', 'fall');

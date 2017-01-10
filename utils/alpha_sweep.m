@@ -68,10 +68,11 @@ xlabel('Threshold');
 ylabel('Pixels');
 legend('TP','TN','FP','FN');
 
-figure(3)
-plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
-title(strcat({'Recall vs Precision & AUC for dataset '},data));
-xlabel('Recall');
-ylabel('Precision');
-legend('Recall vs Precision','Area under the curve');
+%AUC
+% figure(3)
+% plot(recall, transpose(precision), 'g');%, recall, transpose(precision .* recall),'b');
+% title(strcat({'Recall vs Precision & AUC for dataset '},data));
+% xlabel('Recall');
+% ylabel('Precision');
+% legend('Recall vs Precision','Area under the curve');
 end

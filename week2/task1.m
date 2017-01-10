@@ -8,7 +8,7 @@ addpath('../week2');
 
 %Datasets to use 'highway' , 'fall' or 'traffic'
 %Choose dataset images to work on from the above:
-data = 'highway';
+data = 'traffic';
 
 [start_img, range_images, dirInputs, dirGT] = load_data(data);
 
@@ -28,7 +28,7 @@ imwrite(mat2gray(sigma_matrix),filenameB);
 
 %Alpha parameter for sigma weight in background comparison (for frame by
 %frame plot set alpha to scalar, for threshold sweep set alpha to vector)
-alpha_vect = 0:0.25:10;
+alpha_vect = 0:0.25:5;
 % alpha_vect = 2;
 
 
