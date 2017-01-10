@@ -1,3 +1,4 @@
+function task4_non_adaptitive
 close all;
 
 addpath('../datasets');
@@ -18,7 +19,7 @@ background = 50;
 foreground = 255;
 
 %color space
-colorspace = 'YUV'; % 'YUV' 'HSV' 
+colorspace = 'YUV'; % 'YUV' 'HSV' 'RGB'
 [mu_matrix, sigma_matrix] = train_background_color(start_img, range_images, input_files, dirInputs, colorspace);
 
 %Alpha parameter for sigma weight in background comparison (for frame by
@@ -32,3 +33,4 @@ alpha_vect = 0:0.25:5;
 
 %Use when alpha_vect is a vector of thresholds
 time = alpha_sweep_color(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, colorspace)
+end
