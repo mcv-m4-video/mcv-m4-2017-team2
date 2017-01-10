@@ -12,32 +12,43 @@ function task2
     %% load data
     % Datasets to use 'highway', 'fall' or 'traffic'
     % Choose dataset images to work on from the above:
-    data = 'highway';
+    data = 'fall';
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
 
-    dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
-    % dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
+    % dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
+    dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
     % dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
     background = 55;
     foreground = 250;
 
     % Either perform an exhaustive grid search to find the best alpha and rho,
     % or just use the adaptive model if they are already computed.
-    exhaustive_search = true;
+    exhaustive_search = false;
     if exhaustive_search
         exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
     else
-        adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
+        if strcmp(data, 'highway')
+            alpha_val = 4.5;
+            rho_val = 0.35;
+        else
+            if strcmp(data, 'fall')
+                alpha_val = 3.7;
+                rho_val = 0.02;
+            else
+               alpha_val = 4.5;
+                rho_val = 0.35; 
+            end
+        end
+        adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val);
     end
 
 end
 
 
-function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground)
+function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
-    alpha_val = 4.5;
-    rho_val = 0.35;
+
     create_animated_gif = true;
     [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
     % [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
@@ -160,7 +171,7 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         gt_fore = gt >= foreground;
 
         % compute detection using model
-        detection(:,:,i) = abs(mu_matrix-frame(:,:,i)) >= alpha_val*(sqrt(sigma_matrix) + 2);  % +2 to prevent low sigma values
+        detection(:,:,i) = abs(mu_matrix-frame(:,:,i)) >= alpha_val.*(sqrt(sigma_matrix) + 2);  % +2 to prevent low sigma values
         
         % adapt model using pixels belonging to the background
         [mu_matrix, sigma_matrix] = adaptModel(mu_matrix, sigma_matrix, rho_val, detection(:,:,i), frame(:,:,i));
