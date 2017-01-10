@@ -1,0 +1,18 @@
+figure(1)
+plot(alpha_vect, transpose(F1_fall), 'g', alpha_vect, transpose(F1_traffic),'r',alpha_vect, transpose(F1_highway));
+title('F1 for the 3 datasets');
+xlabel('alpha');
+ylabel('F1 measure');
+legend('fall','traffic','highway');
+
+indexmaxfall = find(max(F1_fall) == F1_fall);
+xmaxfall = alpha_vect(indexmaxfall);
+ymaxfall = F1_fall(indexmaxfall);
+strmax = ['Max = ',num2str(ymax)];
+text(xmaxfall,ymaxfall,strmax,'HorizontalAlignment','left');
+
+indexmaxfall = find(max(F1_traffic) == F1_traffic);
+xmaxtraf = alpha_vect(indexmaxfall);
+ymaxtraf = F1_fall(indexmaxfall);
+strmax = ['Max = ',num2str(ymax)];
+text(xmaxtraf,ymaxtraf,strmax,'HorizontalAlignment','left');
