@@ -10,6 +10,7 @@ for i=1:(1 + round(range_images/2))
         train_backg_in(:,:,:,i) = rgb2yuv(train_backg_in(:,:,:,i));
     elseif strcmp(colorspace,'HSV')
         train_backg_in(:,:,:,i) = double(rgb2hsv(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+        train_backg_in(:,:,:,i) = 255.* train_backg_in(:,:,:,i); 
     else 
         error('colorspace not recognized');
     end
