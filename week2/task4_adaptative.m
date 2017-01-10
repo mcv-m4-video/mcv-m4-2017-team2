@@ -4,93 +4,69 @@ close all;
 addpath('../datasets');
 addpath('../utils');
 addpath('../week2');
+%Datasets to use 'highway' , 'fall' or 'traffic'
+%Choose dataset images to work on from the above:
+datasets = {'fall','highway','traffic'};
 
-%% load data
-% Datasets to use 'highway', 'fall' or 'traffic'
-% Choose dataset images to work on from the above:
-data = 'fall';
-[start_img, range_images, dirInputs] = load_data(data);
-input_files = list_files(dirInputs);
+%Evaluating metrics
+background = 50;
+foreground = 255;
 
-% dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
-dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
-background = 55;
-foreground = 250;
 %color space
-colorspace = 'YUV'; % 'YUV' 'HSV' 'RGB'
-% Either perform an exhaustive grid search to find the best alpha and rho,
-% or just use the adaptive model if they are already computed.
-exhaustive_search = true;
-if exhaustive_search
-    exhaustive_grid_search_color(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace);
-else
-    adaptive_model_color(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace);
+colorspaces = {'RGB','HSV','YUV'};
+
+%mat for save the values of f1 and alpha for each dataset in relation to
+%color space
+f1 = zeros(numel(colorspaces),numel(datasets));
+
+%Those values came from the results of task 2 grid search
+alpha_x_dataset = [4.5, 2.4, 5.9];
+rho_x_dataset = [0.35, 0.32, 0.41];
+
+for d=1:numel(datasets)
+    data = datasets{d};
+    [start_img, range_images, dirInputs, dirGT] = load_data(data);
+    
+    %open dataset
+    input_files = list_files(dirInputs);
+    for c=1:numel(colorspaces)
+        colorspace=colorspaces{c};
+        alpha = alpha_x_dataset(d);
+        rho = rho_x_dataset(d);
+        f1(c,d) = adaptive_model_color(alpha,rho,start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace);
+
+    end
+end
+save('non_adaptative.mat','alpha','f1');
+%visualization
+figure;
+rgb = f1(1,:); hsv = f1(2,:); yuv = f1(3,:);
+Y=[rgb;hsv;yuv].';
+h = bar(Y)
+set(gca, 'XTick', 1:3, 'XTickLabel', datasets);
+% color_space_test=num2str([1:3].','Job %d');
+legend(colorspaces','location','northeast')
+title('F1 measure per colorspace for recursive bg detection')
 end
 
-end
 
-
-function adaptive_model_color(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace)
+function f1 = adaptive_model_color(alpha_val, rho_val, start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace)
 [mu_matrix, sigma_matrix] = train_background_color(start_img, range_images, input_files, dirInputs, colorspace);
-alpha_val = 4.5;
-rho_val = 0.35;
-create_animated_gif = true;
-[precision, recall, F1] = single_alpha_adaptive_color(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif, colorspace);
-
+[precision, recall, F1] = single_alpha_adaptive_color(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, colorspace);
+f1 = mean(F1);
 % Show results in tabular format
 fprintf('\tWEEK 2 TASK 4 RESULTS\n');
 fprintf('--------------------------------------------------\n');
-fprintf(['Alpha = \t', colorspace,'\n']);
+fprintf(['ColorSpace = \t', colorspace,'\n']);
 fprintf(['Alpha = \t', num2str(alpha_val),'\n']);
 fprintf(['Rho = \t\t', num2str(rho_val),'\n']);
 fprintf(['Precision = \t', num2str(mean(precision)),'\n']);
 fprintf(['Recall = \t', num2str(mean(recall)),'\n']);
-fprintf(['F1 = \t\t', num2str(mean(F1)),'\n']);
+fprintf(['F1 = \t\t', num2str(f1),'\n']);
+
 end
 
-
-function exhaustive_grid_search_color(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, colorspace)
-%% train model with the first 50% of the images
-[mu_matrix, sigma_matrix] = train_background_color(start_img, range_images, input_files, dirInputs, colorspace);
-
-%% adaptive modelling with the last 50% of the images
-alpha_vals = 0.25:0.25:10;
-rho_vals = 0.025:0.025:1;
-create_animated_gif = false;
-results_f1 = zeros(size(rho_vals, 2), size(alpha_vals, 2));
-i = 1;
-j = 1;
-max_f1 = 0;
-max_alpha = 0;
-max_rho = 0;
-for alpha_val = alpha_vals
-    for rho_val = rho_vals
-        [precision, recall, F1] = single_alpha_adaptive_color(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif, colorspace);
-        results_f1(i,j) = mean(F1);
-        if mean(F1) > max_f1
-            max_f1 = mean(F1);
-            max_alpha = alpha_val;
-            max_rho = rho_val;
-        end
-        i = i+1;
-    end
-    i = 1;
-    j = j+1;
-end
-
-% Show results in tabular format
-fprintf('\tWEEK 2 TASK 4 RESULTS\n');
-fprintf('--------------------------------------------------\n');
-fprintf(['Alpha = \t', num2str(max_alpha),'\n']);
-fprintf(['Rho = \t\t', num2str(max_rho),'\n']);
-fprintf(['F1 = \t\t', num2str(mean(max_f1)),'\n']);
-
-%% plot results
-figure;
-surf(alpha_vals, rho_vals, results_f1);
-end
-
-function [precision, recall, F1] = single_alpha_adaptive_color(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif, colorspace)
+function [precision, recall, F1] = single_alpha_adaptive_color(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, colorspace)
 
 for i=1:(round(range_images/2))
     
@@ -106,6 +82,7 @@ for i=1:(round(range_images/2))
         frame(:,:,:,i) = rgb2yuv(frame(:,:,:,i));
     elseif strcmp(colorspace,'HSV')
         frame(:,:,:,i) = double(rgb2hsv(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+        frame(:,:,:,i) = 255.*frame(:,:,:,i);
     else
         error('colorspace not recognized');
     end
@@ -124,21 +101,6 @@ for i=1:(round(range_images/2))
     % [TP, TN, FP, FN] = get_metrics(gt_foreground, detection);
     [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i));
     [precision(i), recall(i), F1(i)] = evaluation_metrics(TP,TN,FP,FN);
-    
-    % Create animated gif to add to the slides
-    if create_animated_gif
-        fig = figure(1);
-        subplot(1,2,1); imshow(gt*255); title('Ground truth');
-        subplot(1,2,2); imshow(detection(:,:,i)*255); title('Detection with adaptative method');
-        outfile = strcat('task2_adaptative_alpha', num2str(alpha_val), '_rho', num2str(rho_val), '.gif');
-        fig_frame = getframe(fig);
-        im = frame2im(fig_frame);
-        if i == 1
-            imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
-        else
-            imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
-        end
-    end
     
 end
 end
