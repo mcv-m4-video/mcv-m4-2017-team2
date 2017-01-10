@@ -8,11 +8,23 @@ legend('fall','traffic','highway');
 indexmaxfall = find(max(F1_fall) == F1_fall);
 xmaxfall = alpha_vect(indexmaxfall);
 ymaxfall = F1_fall(indexmaxfall);
-strmax = ['Max = ',num2str(ymax)];
-text(xmaxfall,ymaxfall,strmax,'HorizontalAlignment','left');
+strmaxf = ['Max alpha = ',num2str(xmaxfall)];
+text(xmaxfall,ymaxfall,strmaxf,'HorizontalAlignment','left');
 
-indexmaxfall = find(max(F1_traffic) == F1_traffic);
-xmaxtraf = alpha_vect(indexmaxfall);
-ymaxtraf = F1_fall(indexmaxfall);
-strmax = ['Max = ',num2str(ymax)];
-text(xmaxtraf,ymaxtraf,strmax,'HorizontalAlignment','left');
+indexmaxtraf = find(max(F1_traffic) == F1_traffic);
+xmaxtraf = alpha_vect(indexmaxtraf);
+ymaxtraf = F1_traffic(indexmaxtraf);
+strmaxt = ['Alpha = ',num2str(xmaxtraf), 'Max F1 =', num2str(ymaxtraf)];
+text(xmaxtraf,ymaxtraf,strmaxt,'HorizontalAlignment','left');
+
+indexmaxh = find(max(F1_highway) == F1_highway);
+xmaxh = alpha_vect(indexmaxh);
+ymaxh = F1_highway(indexmaxh);
+strmaxh = ['Max alpha = ',num2str(xmaxh), ' Max F1 = ', num2str(ymaxh)];
+text(xmaxh,ymaxh,strmaxh,'HorizontalAlignment','left');
+
+fall=[xmaxfall,ymaxfall]
+
+highway=[xmaxh,ymaxh]
+
+traffic=[xmaxtraf,ymaxtraf]
