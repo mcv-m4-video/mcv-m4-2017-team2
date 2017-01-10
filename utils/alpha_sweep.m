@@ -1,5 +1,5 @@
 %function for sweeping through several thresholds to compare performance
-function [time] = alpha_sweep(alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
+function [time] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
 tic
 
 precision = zeros(1,size(alpha_vect,2));
@@ -51,25 +51,27 @@ end
 
 time = toc;
 
+save(strcat(data,'_task1_results.mat'),'TP_','TN_','FP_','FN_', 'precision', 'recall', 'F1','alpha_vect');
+
 x= alpha_vect;
 figure(1)
 plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
-title('Precision, Recall & F1 vs Threshold')
-xlabel('Threshold')
-ylabel('Measure')
+title(strcat(data,'Precision, Recall & F1 vs Threshold for dataset ',data));
+xlabel('Threshold');
+ylabel('Measure');
 legend('Precision','Recall','F1');
 
 figure(2)
 plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
-title('TP, TN, FP & FN vs Threshold')
-xlabel('Threshold')
-ylabel('Pixels')
+title(strcat('TP, TN, FP & FN vs Threshold for',' ',data));
+xlabel('Threshold');
+ylabel('Pixels');
 legend('TP','TN','FP','FN');
 
 figure(3)
 plot(recall, transpose(precision), 'g', recall, transpose(precision .* recall),'b');
-title('Recall vs Precision & AUC');
-xlabel('Recall')
-ylabel('Precision')
+title(strcat('Recall vs Precision & AUC for dataset ',data));
+xlabel('Recall');
+ylabel('Precision');
 legend('Recall vs Precision','Area under the curve');
 end
