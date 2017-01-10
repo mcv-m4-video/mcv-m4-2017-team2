@@ -30,27 +30,24 @@ else
     error('Sequence not recognized.')
 end
 
-Threshold = 2;
+Threshold = 2.5;
 K = 3;
-Rho = 0.1;
-THFG = 0.1;
+Rho = 0.7;
+THFG = 0.3;
 
 
 % Compute detection:
-[Sequence] = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
-
-% Write detection:
-write_sequence(Sequence, dirResults, T1);
+sequence = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
 
 % Evaluate detection:
-[precision, recall, F1] = test_written_sequence(dirResults, videoname);
+[precision, recall, F1] = test_sequence(sequence, videoname, T1);
 
 % Write video:
 v = VideoWriter('stgm.avi','Grayscale AVI');
 v.FrameRate = 15;
 open(v)
-for i = 1:size(Sequence,3)
-    frame = mat2gray(Sequence(:,:,i));
+for i = 1:size(sequence,3)
+    frame = mat2gray(sequence(:,:,i));
     writeVideo(v,frame)
 end
 close(v)

@@ -23,6 +23,15 @@ Settings (function.param):
 Task 3
 ------
 
+    * task3.m
+        Computes the detection with Stauffer and Grimson for the specified parameters and video seuqence.
+
+    * task3_tune.m
+        Adjust the parameters for Stauffer and Grimson, for a given number of gaussians, doing a search over a grid.
+
+    * task3_tune2.m
+        Adjust the parameters for Stauffer and Grimson, for a given number of gaussians, with gradient ascent.
+
 
 Task 4
 ------

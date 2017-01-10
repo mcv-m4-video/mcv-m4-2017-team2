@@ -25,11 +25,11 @@ for i=1:files_number
     gt = imread(strcat(dirGT, 'gt', file_number, '.png'));  % Read the GT image
     test = imread(strcat(dirResults,'res_',file_number,'.png'));  % Read the image
     gt = gt >= motion;  % binarize gt mask
-    [TP, TN, FP, FN] = get_metrics(gt, test);
-    TP = TP + TP;
-    FP = FP + FP;
-    FN = FN + FN;
-    TN = TN + TN;
+    [TP_frame, TN_frame, FP_frame, FN_frame] = get_metrics(gt, test);
+    TP = TP + TP_frame;
+    FP = FP + FP_frame;
+    FN = FN + FN_frame;
+    TN = TN + TN_frame;
 end
 
 % Compute evaluation metrics
