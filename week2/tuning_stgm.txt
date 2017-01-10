@@ -1,0 +1,22 @@
+Best values found for K = 3 Gaussians: 0.5936
+Threshold = 2.000000
+Rho = 0.100000
+THFG = 0.100000
+
+
+Best values found for K = 4 Gaussians: 0.5881
+Threshold = 1.750000
+Rho = 0.100000
+THFG = 0.100000
+
+
+Best values found for K = 5 Gaussians: 0.586276
+Threshold = 1.500000
+Rho = 0.100000
+THFG = 0.100000
+
+
+Best values found for K = 6 Gaussians: 0.570668
+Threshold = 1.250000
+Rho = 0.100000
+THFG = 0.100000
