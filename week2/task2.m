@@ -16,9 +16,22 @@ function task2
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
 
-    % dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
-    dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
-    % dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
+    if strcmp(data, 'highway')
+        alpha_val = 4.5;
+        rho_val = 0.35;
+        dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
+    else
+        if strcmp(data, 'fall')
+            alpha_val = 6.25;
+            rho_val = 0.025;
+            dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
+        else
+            alpha_val = 5.75;
+            rho_val = 0.2; 
+            dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
+        end
+    end
+
     background = 55;
     foreground = 250;
 
@@ -28,18 +41,6 @@ function task2
     if exhaustive_search
         exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
     else
-        if strcmp(data, 'highway')
-            alpha_val = 4.5;
-            rho_val = 0.35;
-        else
-            if strcmp(data, 'fall')
-                alpha_val = 3.7;
-                rho_val = 0.02;
-            else
-               alpha_val = 4.5;
-                rho_val = 0.35; 
-            end
-        end
         adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val);
     end
 
@@ -159,6 +160,8 @@ end
 
 
 function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif)
+
+    %sigma_matrix = sigma_matrix.^2;
 
     for i=1:(round(range_images/2))
         
