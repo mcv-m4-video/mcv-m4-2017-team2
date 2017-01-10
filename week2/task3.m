@@ -15,14 +15,25 @@ foreground = 250;
 dirResults = './results/';
 
 
-videoname = 'highway';
-T1 = 1050;
-T2 = 1350;
+videoname = 'fall';
 
-Threshold = 1.25;
-K = 9;
-Rho = 0.25;
-THFG = 0.25;
+if(strcmp(videoname, 'highway'))
+    T1 = 1050;
+    T2 = 1350;
+elseif(strcmp(videoname, 'fall'))
+    T1 = 1460;
+    T2 = 1560;
+elseif(strcmp(videoname, 'traffic'))
+    T1 = 950;
+    T2 = 1050;
+else
+    error('Sequence not recognized.')
+end
+
+Threshold = 2;
+K = 3;
+Rho = 0.1;
+THFG = 0.1;
 
 
 % Compute detection:
@@ -32,7 +43,7 @@ THFG = 0.25;
 write_sequence(Sequence, dirResults, T1);
 
 % Evaluate detection:
-[precision, recall, F1] = test_sequence(dirResults, videoname);
+[precision, recall, F1] = test_written_sequence(dirResults, videoname);
 
 % Write video:
 v = VideoWriter('stgm.avi','Grayscale AVI');

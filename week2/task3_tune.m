@@ -19,78 +19,69 @@ videoname = 'highway';
 T1 = 1050;
 T2 = 1350;
 
-Threshold_vec = [1, 1.25, 1.5, 1.75, 2, 2.5, 3, 3.5, 4];
-K_vec = [2, 5, 6, 7, 8, 9, 10, 11, 12];
+% Number of Gaussians (fixed):
+K = 5;
+
+Threshold_vec = [1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 Rho_vec = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4];
-THFG_vec = [0.1, 0.2, 0.225, 0.25, 0.275, 0.3, 0.4];
+THFG_vec = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4];
 
-% Threshold
-K = 8;
-Rho = 0.25;
-THFG = 0.25;
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Threshold:
-F1_vec = zeros(1,length(Threshold_vec));
-for i = 1:length(Threshold_vec)
-    Threshold = Threshold_vec(i);
-    % Compute detection:
-    [Sequence] = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
-    % Write detection:
-    write_sequence(Sequence, dirResults, T1);
-    % Evaluate detection:
-    [~, ~, F1_vec(i)] = test_sequence(dirResults, videoname);
-end
-[~, imax] = max(F1_vec);
-Threshold = Threshold_vec(imax);
+% Threshold_vec = [1, 1.5];
+% Rho_vec = [0.1, 0.2];
+% THFG_vec = [0.1, 0.15];
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% K:
-F1_vec = zeros(1,length(K_vec));
-for i = 1:length(K_vec)
-    K = K_vec(i);
-    % Compute detection:
-    [Sequence] = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
-    % Write detection:
-    write_sequence(Sequence, dirResults, T1);
-    % Evaluate detection:
-    [~, ~, F1_vec(i)] = test_sequence(dirResults, videoname);
+%%%% Compute over grid:
+F1_array = zeros(length(Threshold_vec), length(Rho_vec), length(THFG_vec));
+progress = 10;
+fprintf('Completed 0%%\n')
+for idx1 = 1:length(Threshold_vec)
+    if(idx1 > progress / 100 * length(Threshold_vec))
+        fprintf('Completed %i%%\n', progress)
+        progress = progress + 10;
+    end
+    Threshold = Threshold_vec(idx1);
+    for idx2 = 1:length(Rho_vec)
+        Rho = Rho_vec(idx2);
+        for idx3 = 1:length(THFG_vec)
+            THFG = THFG_vec(idx3);
+            % Compute detection:
+            sequence = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
+            % Evaluate detection:
+            [~, ~, F1_array(idx1, idx2, idx3)] = test_sequence(sequence, videoname, T1);
+        end
+    end
 end
-[~, imax] = max(F1_vec);
-K = K_vec(imax);
+fprintf('Completed 100%%\n')
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Rho:
-F1_vec = zeros(1,length(Rho_vec));
-for i = 1:length(Rho_vec)
-    Rho = Rho_vec(i);
-    % Compute detection:
-    [Sequence] = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
-    % Write detection:
-    write_sequence(Sequence, dirResults, T1);
-    % Evaluate detection:
-    [~, ~, F1_vec(i)] = test_sequence(dirResults, videoname);
+% Search over grid:
+idx1max = 0;
+idx2max = 0;
+idx3max = 0;
+F1max = 0;
+for idx1 = 1:length(Threshold_vec)
+    for idx2 = 1:length(Rho_vec)
+        for idx3 = 1:length(THFG_vec)
+            if(F1max < F1_array(idx1, idx2, idx3))
+                idx1max = idx1;
+                idx2max = idx2;
+                idx3max = idx3;
+                F1max = F1_array(idx1, idx2, idx3);
+            end
+        end
+    end
 end
-[~, imax] = max(F1_vec);
-Rho = Rho_vec(imax);
 
+Threshold = Threshold_vec(idx1max);
+Rho = Rho_vec(idx2max);
+THFG = THFG_vec(idx3max);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% THFG:
-F1_vec = zeros(1,length(THFG_vec));
-for i = 1:length(THFG_vec)
-    THFG = THFG_vec(i);
-    % Compute detection:
-    [Sequence] = MultG_fun(Threshold, T1, T2, K, Rho, THFG, videoname);
-    % Write detection:
-    write_sequence(Sequence, dirResults, T1);
-    % Evaluate detection:
-    [~, ~, F1_vec(i)] = test_sequence(dirResults, videoname);
-end
-[~, imax] = max(F1_vec);
-THFG = THFG_vec(imax);
+fprintf('Best values found for K = %i Gaussians: %f\n', K, F1max)
+fprintf('Threshold = %f\n', Threshold)
+fprintf('Rho = %f\n', Rho)
+fprintf('THFG = %f\n\n', THFG)
+
 
 
 

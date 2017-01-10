@@ -33,7 +33,15 @@
 function [Sequence] = MultG_fun(Threshold,T1,T2,K,Rho,THFG,video)
 
 VideoInFolder = ['input']; 
-Fold = ['../datasets/cdvd/dataset/baseline/', video];
+if(strcmp(video, 'highway'))
+    Fold = '../datasets/cdvd/dataset/baseline/highway';
+elseif(strcmp(video, 'fall'))
+    Fold = '../datasets/cdvd/dataset/dynamicBackground/fall';
+elseif(strcmp(video, 'traffic'))
+    Fold = '../datasets/cdvd/dataset/cameraJitter/traffic';
+else
+    error('Video sequence not recognized')
+end
 
 % Initialization
 
