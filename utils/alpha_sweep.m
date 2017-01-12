@@ -1,5 +1,5 @@
 %function for sweeping through several thresholds to compare performance
-function [time] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
+function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
 tic
 
 precision = zeros(1,size(alpha_vect,2));
@@ -50,25 +50,26 @@ for n=1:size(alpha_vect,2)
 end    
 
 time = toc;
+% filename = strcat(data,'_task1_results.mat');
+% 
+% save(filename,'TP_','TN_','FP_','FN_', 'precision', 'recall', 'F1','alpha_vect');
 
-save(strcat(data,'_task1_results.mat'),'TP_','TN_','FP_','FN_', 'precision', 'recall', 'F1','alpha_vect');
+% x= alpha_vect;
+% figure(1)
+% plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
+% title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
+% xlabel('Threshold');
+% ylabel('Measure');
+% legend('Precision','Recall','F1');
 
-x= alpha_vect;
-figure(1)
-plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
-title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
-xlabel('Threshold');
-ylabel('Measure');
-legend('Precision','Recall','F1');
+% figure(2)
+% plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
+% title(strcat({'TP, TN, FP & FN vs Threshold for '},data));
+% xlabel('Threshold');
+% ylabel('Pixels');
+% legend('TP','TN','FP','FN');
 
-figure(2)
-plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
-title(strcat({'TP, TN, FP & FN vs Threshold for '},data));
-xlabel('Threshold');
-ylabel('Pixels');
-legend('TP','TN','FP','FN');
-
-%AUC
+AUC = trapz((TP_ ./(TP_ + FN_)),2)/size(TP_,2);
 % figure(3)
 % plot(recall, transpose(precision), 'g');%, recall, transpose(precision .* recall),'b');
 % title(strcat({'Recall vs Precision & AUC for dataset '},data));
