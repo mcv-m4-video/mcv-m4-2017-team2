@@ -1,0 +1,9 @@
+P/R AUC
+
+fall= 0.5531
+
+highway= 0.3361
+
+traffic= 0.3598
+
+ROC AUC
