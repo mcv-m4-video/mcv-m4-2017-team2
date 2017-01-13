@@ -1,9 +1,7 @@
 clearvars
 close all
 
-addpath('../datasets');
 addpath('../utils');
-addpath('../utils/StGm');
 
 % Evaluating data and metrics
 background = 55;
@@ -54,15 +52,18 @@ end
 % Evaluate detection:
 [precision, recall, F1] = test_sequence(sequence, videoname, T1, 1);
 
-% % Write video:
-% v = VideoWriter('stgm.avi','Grayscale AVI');
-% v.FrameRate = 15;
-% open(v)
-% for i = 1:size(sequence,3)
-%     frame = mat2gray(sequence(:,:,i));
-%     writeVideo(v,frame)
-% end
-% close(v)
+% Write video:
+v = VideoWriter('stgm.avi','Grayscale AVI');
+v.FrameRate = 15;
+open(v)
+for i = 1:size(sequence,3)
+    frame = mat2gray(sequence(:,:,i));
+    writeVideo(v,frame)
+end
+close(v)
+
+% Compute precision-recall curve:
+st_gm_precision_recall();
 
 
 
