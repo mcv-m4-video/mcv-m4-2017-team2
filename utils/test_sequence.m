@@ -1,4 +1,4 @@
-function [precision, recall, F1] = test_sequence(sequence, videoname, T1)
+function [precision, recall, F1] = test_sequence(sequence, videoname, T1, show_plot)
 
 if (strcmp(videoname, 'highway'))
     dirGT = '../datasets/cdvd/dataset/baseline/highway/groundtruth/';
@@ -31,13 +31,15 @@ for i = 1:nfiles
     FN = FN + FN_frame;
     TN = TN + TN_frame;
     
-    subplot(1,2,1)
-    imshow(gt, [0 1])
-    title(['gt',file_number,'.png'])
-    subplot(1,2,2)
-    imshow(test, [0 1])
-    title(['sequence(:,:,', num2str(i),')'])
-    pause(0.01)
+    if(show_plot == 1)
+        subplot(1,2,1)
+        imshow(gt, [0 1])
+        title(['gt',file_number,'.png'])
+        subplot(1,2,2)
+        imshow(test, [0 1])
+        title(['sequence(:,:,', num2str(i),')'])
+        pause(0.001)
+    end
     
     t = t + 1;
 end
