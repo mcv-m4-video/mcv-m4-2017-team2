@@ -1,33 +1,39 @@
 % Week 2 task 2
 % Task 2.1: Adaptive modelling
 % Task 2.2: Comparison adaptive vs non
+        % Highway best results:     Alpha = 2.75, Rho = 0.2,  F1 = 0.72946
+        % Fall best results:        Alpha = 3.25, Rho = 0.05, F1 = 0.70262
+        % Traffic best results:     Alpha = 3.25, Rho = 0.15, F1 = 0.66755
 
 function task2
     close all;
 
-    addpath('../../datasets');
-    addpath('../../utils');
-    addpath('../../week2');
+    addpath('../datasets');
+    addpath('../utils');
+    addpath('../week2');
 
     %% load data
     % Datasets to use 'highway', 'fall' or 'traffic'
     % Choose dataset images to work on from the above:
-    data = 'fall';
+    data = 'highway';
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
 
     if strcmp(data, 'highway')
-        alpha_val = 4.5;
-        rho_val = 0.35;
+        % Best results: Alpha = 2.75, Rho = 0.2, F1 = 0.72946
+        alpha_val = 2.75;
+        rho_val = 0.2;
         dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
     else
         if strcmp(data, 'fall')
-            alpha_val = 6.25;
-            rho_val = 0.025;
+            % Best results: Alpha = 3.25, Rho = 0.05, F1 = 0.70262
+            alpha_val = 3.25;
+            rho_val = 0.05;
             dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
         else
-            alpha_val = 5.75;
-            rho_val = 0.2; 
+            % Best results: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
+            alpha_val = 3.25;
+            rho_val = 0.15; 
             dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
         end
     end
@@ -37,7 +43,7 @@ function task2
 
     % Either perform an exhaustive grid search to find the best alpha and rho,
     % or just use the adaptive model if they are already computed.
-    exhaustive_search = false;
+    exhaustive_search = true;
     if exhaustive_search
         exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground);
     else
@@ -50,7 +56,7 @@ end
 function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
-    create_animated_gif = true;
+    create_animated_gif = false;
     [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
     % [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
 
@@ -107,88 +113,49 @@ function exhaustive_grid_search(start_img, range_images, dirInputs, input_files,
 end
 
 
-function [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif)
-    % function to create an animated gif with the gt, non-adaptive detection and adaptive detection
 
-    mu_matrix_adapted = mu_matrix;
-    sigma_matrix_adapted = sigma_matrix;
-
-    for i=1:(round(range_images/2))
-        
-        % read frame and ground truth
-        index = i + (start_img + range_images/2) - 1;
-        file_number = input_files(index).name(3:8);
-        frame(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
-        gt = imread(strcat(dirGT,'gt',file_number,'.png'));
-        gt_back = gt <= background;
-        gt_fore = gt >= foreground;
-
-        % compute detection using model
-        detection_non_adapted(:,:,i) = abs(mu_matrix-frame(:,:,i)) >= alpha_val*(sqrt(sigma_matrix) + 2);  % +2 to prevent low sigma values
-        detection_adapted(:,:,i) = abs(mu_matrix_adapted-frame(:,:,i)) >= alpha_val*(sqrt(sigma_matrix_adapted) + 2);  % +2 to prevent low sigma values
-        
-        % adapt model using pixels belonging to the background
-        [mu_matrix_adapted, sigma_matrix_adapted] = adaptModel(mu_matrix, sigma_matrix, rho_val, detection_adapted(:,:,i), frame(:,:,i));
-
-        % compute metrics with detection and gt
-        % [TP, TN, FP, FN] = get_metrics(gt_foreground, detection);
-        [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection_adapted(:,:,i));
-        [precision_adapted(i), recall_adapted(i), F1_adapted(i)] = evaluation_metrics(TP,TN,FP,FN);
-
-        [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection_non_adapted(:,:,i));
-        [precision_non_adapted(i), recall_non_adapted(i), F1_non_adapted(i)] = evaluation_metrics(TP,TN,FP,FN);
-
-    
-        % Create animated gif to add to the slides
-        if create_animated_gif
-            fig = figure(1);
-            subplot(1,3,1); imshow(gt*255); title('Ground truth');
-            subplot(1,3,2); imshow(detection_non_adapted(:,:,i)*255); title('non adaptative method');
-            subplot(1,3,3); imshow(detection_adapted(:,:,i)*255); title('adaptative method');
-            outfile = strcat('task2_adaptative_dual_alpha', num2str(alpha_val), '_rho', num2str(rho_val), '.gif');
-            fig_frame = getframe(fig);
-            im = frame2im(fig_frame);
-            if i == 1
-                imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
-            else
-                imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
-            end
-        end
-
-    end
-end
 
 
 function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif)
 
     %sigma_matrix = sigma_matrix.^2;
 
-    for i=1:(round(range_images/2))
+    TP_global = 0;
+    TN_global = 0;
+    FP_global = 0;
+    FN_global = 0;
+
+    for i=1:(round(range_images/2)+1)
         
         % read frame and ground truth
         index = i + (start_img + range_images/2) - 1;
         file_number = input_files(index).name(3:8);
-        frame(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+        frame = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
         gt_back = gt <= background;
         gt_fore = gt >= foreground;
 
         % compute detection using model
-        detection(:,:,i) = abs(mu_matrix-frame(:,:,i)) >= alpha_val.*(sqrt(sigma_matrix) + 2);  % +2 to prevent low sigma values
+        detection = abs(frame - mu_matrix) >= alpha_val.*(sigma_matrix+2);
         
-        % adapt model using pixels belonging to the background
-        [mu_matrix, sigma_matrix] = adaptModel(mu_matrix, sigma_matrix, rho_val, detection(:,:,i), frame(:,:,i));
-
         % compute metrics with detection and gt
         % [TP, TN, FP, FN] = get_metrics(gt_foreground, detection);
-        [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i));
-        [precision(i), recall(i), F1(i)] = evaluation_metrics(TP,TN,FP,FN);
+        [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection);
+
+        TP_global = TP_global + TP;
+        TN_global = TN_global + TN;
+        FP_global = FP_global + FP;
+        FN_global = FN_global + FN;
+
+        % adapt model using pixels belonging to the background
+        % [mu_matrix, sigma_matrix] = adaptModel(mu_matrix, sigma_matrix, rho_val, detection, frame);
+        [mu_matrix, sigma_matrix] = adaptModel(frame, detection, mu_matrix, sigma_matrix, rho_val);
     
         % Create animated gif to add to the slides
         if create_animated_gif
             fig = figure(1);
             subplot(1,2,1); imshow(gt*255); title('Ground truth');
-            subplot(1,2,2); imshow(detection(:,:,i)*255); title('Detection with adaptative method');
+            subplot(1,2,2); imshow(detection*255); title('Detection with adaptative method');
             outfile = strcat('task2_adaptative_alpha', num2str(alpha_val), '_rho', num2str(rho_val), '.gif');
             fig_frame = getframe(fig);
             im = frame2im(fig_frame);
@@ -200,11 +167,65 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         end
 
     end
+
+    [precision, recall, F1] = evaluation_metrics(TP_global,TN_global,FP_global,FN_global);
 end
 
 
-function [mean_matrix, variance_matrix] = adaptModel(mean_matrix, variance_matrix, rho, detection, frame)
+function [mean_matrix,variance_matrix] = adaptModel(frame, detection, mean_matrix, variance_matrix, rho)
     % background pixels: ~detection
-    mean_matrix(~detection) = rho.*frame(~detection) + (1-rho).*mean_matrix(~detection);
-    variance_matrix(~detection) = rho.*(frame(~detection) - mean_matrix(~detection)).^2 + (1 - rho).*variance_matrix(~detection);
+    mean_matrix(~logical(detection))=rho*frame(~logical(detection)) + (1-rho)*mean_matrix(~logical(detection));
+    variance_matrix(~logical(detection))=sqrt(rho*(frame(~logical(detection))-mean_matrix(~logical(detection))).^2 + (1-rho)*variance_matrix(~logical(detection)).^2);
 end
+
+
+% function [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif)
+%     % function to create an animated gif with the gt, non-adaptive detection and adaptive detection
+
+%     mu_matrix_adapted = mu_matrix;
+%     sigma_matrix_adapted = sigma_matrix;
+
+%     for i=1:(round(range_images/2))
+        
+%         % read frame and ground truth
+%         index = i + (start_img + range_images/2) - 1;
+%         file_number = input_files(index).name(3:8);
+%         frame(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+%         gt = imread(strcat(dirGT,'gt',file_number,'.png'));
+%         gt_back = gt <= background;
+%         gt_fore = gt >= foreground;
+
+%         % compute detection using model
+%         detection_non_adapted(:,:,i) = abs(mu_matrix-frame(:,:,i)) >= alpha_val*(sqrt(sigma_matrix) + 2);  % +2 to prevent low sigma values
+%         detection_adapted(:,:,i) = abs(mu_matrix_adapted-frame(:,:,i)) >= alpha_val*(sqrt(sigma_matrix_adapted) + 2);  % +2 to prevent low sigma values
+        
+%         % adapt model using pixels belonging to the background
+%         [mu_matrix_adapted, sigma_matrix_adapted] = adaptModel(mu_matrix, sigma_matrix, rho_val, detection_adapted(:,:,i), frame(:,:,i));
+
+%         % compute metrics with detection and gt
+%         % [TP, TN, FP, FN] = get_metrics(gt_foreground, detection);
+%         [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection_adapted(:,:,i));
+%         [precision_adapted(i), recall_adapted(i), F1_adapted(i)] = evaluation_metrics(TP,TN,FP,FN);
+
+%         [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection_non_adapted(:,:,i));
+%         [precision_non_adapted(i), recall_non_adapted(i), F1_non_adapted(i)] = evaluation_metrics(TP,TN,FP,FN);
+
+    
+%         % Create animated gif to add to the slides
+%         if create_animated_gif
+%             fig = figure(1);
+%             subplot(1,3,1); imshow(gt*255); title('Ground truth');
+%             subplot(1,3,2); imshow(detection_non_adapted(:,:,i)*255); title('non adaptative method');
+%             subplot(1,3,3); imshow(detection_adapted(:,:,i)*255); title('adaptative method');
+%             outfile = strcat('task2_adaptative_dual_alpha', num2str(alpha_val), '_rho', num2str(rho_val), '.gif');
+%             fig_frame = getframe(fig);
+%             im = frame2im(fig_frame);
+%             if i == 1
+%                 imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
+%             else
+%                 imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
+%             end
+%         end
+
+%     end
+% end
