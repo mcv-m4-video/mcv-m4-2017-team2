@@ -1,0 +1,6 @@
+# SGE submission options
+#$ -q medium.master.q@compute-0-2 #Queue selection
+#$ -cwd #Change to current working directory
+#$ -N task3_tune_highway #Name of the job
+#$ -l mem_token=2G,mem_free=2G #Relevant information for process queuing
+/opt/matlab/bin/matlab -nodesktop -nosplash -nodisplay -r "run('/home/1442514/M4_team2/mcv-m4-2017-team2/week2/task3_tune_traffic.m');"
