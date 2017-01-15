@@ -10,7 +10,7 @@ black_n_white = 1;
 videoname = 'traffic';
 
 % Sizes of grid:
-n_LearningRate = 21;
+n_LearningRate = 11;
 n_MinimumBackgroundRatio = 11;
 
 % Compute over grid:

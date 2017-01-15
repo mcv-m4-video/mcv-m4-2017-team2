@@ -1,7 +1,5 @@
 function tune_st_gm(videoname, black_n_white, n_LearningRate, n_MinimumBackgroundRatio)
 
-addpath('../utils');
-
 % Select directories and times depending on video sequence:
 if(strcmp(videoname, 'highway'))
     T1 = 1050;
@@ -101,6 +99,7 @@ end
 F1max_results = [prec_F1max, rec_F1max, F1max; ...
     NumGaussians_vec(idx1maxF1), LearningRate_vec(idx2maxF1), MinimumBackgroundRatio_vec(idx3maxF1)];
 fprintf('Done!\n')
+fprintf('Maximum F1: %f\n', F1max)
 
 % Search for maximum precision, given recall:
 fprintf('Searching for maximum precision, given recall... ')
