@@ -5,9 +5,6 @@ if(exist(dirResults, 'dir') ~= 7)
     mkdir(dirResults)
 end
 
-% Delete previous files:
-delete([dirResults, '/*'])
-
 nframes = size(sequence, 3);
 
 t = T1;
