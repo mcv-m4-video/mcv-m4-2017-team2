@@ -50,8 +50,15 @@ for n=1:size(alpha_vect,2)
 end    
 
 time = toc;
+
+%AUC of Precision metrics
+AUC = trapz(precision,2)/size(TP_,2);
+
+%AUC TPR
+% AUC = trapz((TP_ ./(TP_ + FN_)),2)/size(TP_,2);
+
+%For saving environment variables on debugging mode:
 % filename = strcat(data,'_task1_results.mat');
-% 
 % save(filename,'TP_','TN_','FP_','FN_', 'precision', 'recall', 'F1','alpha_vect');
 
 % x= alpha_vect;
@@ -69,7 +76,6 @@ time = toc;
 % ylabel('Pixels');
 % legend('TP','TN','FP','FN');
 
-AUC = trapz((TP_ ./(TP_ + FN_)),2)/size(TP_,2);
 % figure(3)
 % plot(recall, transpose(precision), 'g');%, recall, transpose(precision .* recall),'b');
 % title(strcat({'Recall vs Precision & AUC for dataset '},data));
