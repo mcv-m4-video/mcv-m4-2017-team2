@@ -1,8 +1,8 @@
 %function for using detection with a single alpha value
-function single_alpha(alpha, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
+function detection = single_alpha(alpha, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT)
 
-v = VideoWriter('detection.avi','Grayscale AVI');
-v.FrameRate = 15;
+% v = VideoWriter('detection.avi','Grayscale AVI');
+% v.FrameRate = 15;
 
 TP = 0;
 TN = 0;
@@ -37,17 +37,17 @@ FNvector = zeros(size(round(range_images/2)));
     
     end
     
-    open(v)
-        writeVideo(v,frame)
-        close(v)
-    
+%     open(v)
+%         writeVideo(v,frame)
+%         close(v)
+%     
        
-    %Frame by frame plotting
-    x= 1:range_images/2;
-    figure(1)
-    plot(x, transpose(precision), x, transpose(recall), x, transpose(F1));
-    title('Metrics for alpha = 2')
-    xlabel('Frame')
-    ylabel('Measure')
-    legend('Precision','Recall','F1');
+%     %Frame by frame plotting
+%     x= 1:range_images/2;
+%     figure(1)
+%     plot(x, transpose(precision), x, transpose(recall), x, transpose(F1));
+%     title('Metrics for alpha = 2')
+%     xlabel('Frame')
+%     ylabel('Measure')
+%     legend('Precision','Recall','F1');
 end
