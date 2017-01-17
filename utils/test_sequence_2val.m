@@ -1,6 +1,6 @@
 %test sequence version for 2 groundtruth values, uses metrics vectors
 %instead of cumulative numbers
-function [precision, recall, F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename)
+function [overall_precision, overall_recall, overall_F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename, useTrain)
 
 if(write_video && ~show_video)
     error('Not possible to write video and not show it.')
@@ -44,7 +44,10 @@ if(show_video)
     end
 end
 
-t = T1;
+if (useTrain)
+    t = T1;
+else    
+    
 for i = 1:nfiles
     file_number = sprintf('%06d', t);
     gt = imread(strcat(dirGT, 'gt', file_number, '.png'));  % Read the GT image
@@ -80,7 +83,9 @@ end
 
 % Compute evaluation metrics
 [precision, recall, F1] = evaluation_metrics(TP, TN, FP, FN);
+overall_precision = sum(precision)/size(precision,2);
+overall_recall = sum(recall)/size(recall,2);
+overall_F1 = sum(F1)/size(F1,2);
 [AUC] = area_under_curve(TP, FP, FN, TN, precision, recall, F1,'precision');
-return
 
 end

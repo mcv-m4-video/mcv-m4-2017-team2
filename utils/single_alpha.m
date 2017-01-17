@@ -15,8 +15,8 @@ FPvector = zeros(size(round(range_images/2)));
 FNvector = zeros(size(round(range_images/2)));
 
 %detect foreground and compare results
-    for i=1:(round(range_images/2))
-        index = i + (start_img + range_images/2) - 1;
+    for i=1:range_images%(round(range_images/2))
+        index = i + start_img - 1;%(start_img + range_images/2) - 1;
         file_number = input_files(index).name(3:8);
         test_backg_in(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
         detection(:,:,i) = abs(mu_matrix-test_backg_in(:,:,i)) >= (alpha * (sigma_matrix + 2));
