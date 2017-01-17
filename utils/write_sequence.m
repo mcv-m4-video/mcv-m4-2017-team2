@@ -1,5 +1,7 @@
 function write_sequence(sequence, dirResults, T1)
 
+fprintf('Writing sequence...\n')
+
 % Check for the existence of the folder:
 if(exist(dirResults, 'dir') ~= 7)
     mkdir(dirResults)
@@ -14,6 +16,8 @@ for i = 1:nframes
     imwrite(sequence(:,:,i), filepath);
     t = t + 1;
 end
+
+fprintf('Done!\n')
 
 return
 
