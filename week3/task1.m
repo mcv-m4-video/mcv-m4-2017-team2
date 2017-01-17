@@ -18,8 +18,4 @@ fprintf('Precision: %f\n', precision)
 fprintf('Recall: %f\n', recall)
 fprintf('F1: %f\n', F1)
 
-
-
-
-
 end
