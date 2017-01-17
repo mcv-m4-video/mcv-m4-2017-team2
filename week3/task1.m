@@ -1,5 +1,6 @@
 function task1(videoname, connectivity, show_video, write_video)
 
+% connectivity can be either 4 or 8.
 
 close all
 
