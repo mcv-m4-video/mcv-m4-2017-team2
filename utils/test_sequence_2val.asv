@@ -14,14 +14,17 @@ end
 
 if (strcmp(videoname, 'highway'))
     T1 = 1050;
+    T2 = 1350;
     dirGT = '../datasets/cdvd/dataset/baseline/highway/groundtruth/';
     
 elseif (strcmp(videoname, 'fall'))
     T1 = 1460;
+    T2 = 1560;
     dirGT = '../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/';
     
 elseif (strcmp(videoname, 'traffic'))
     T1 = 950;
+    T2 = 1050;
     dirGT = '../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/';
     
 else
