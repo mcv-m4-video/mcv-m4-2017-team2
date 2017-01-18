@@ -10,7 +10,7 @@ function task4
     %% load data
     % Datasets to use 'highway', 'fall' or 'traffic'
     % Choose dataset images to work on from the above:
-    dataset = 'fall';
+    dataset = 'highway';
     [start_img, range_images, dirInputs] = load_data(dataset);
     input_files = list_files(dirInputs);
 
@@ -43,7 +43,7 @@ end
 function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
     [mu_matrix, sigma_matrix, background_rgb] = train_background_rgb(start_img, range_images, input_files, dirInputs);
 
-    create_animated_gif = false;
+    create_animated_gif = true;
     [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif);
     % [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
 
@@ -79,10 +79,20 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         gt_fore = gt >= foreground;
 
         % compute detection using model
-        detection = abs(frame - mu_matrix) >= alpha_val.*(sigma_matrix+2);
+        detection_with_shadows = abs(frame - mu_matrix) >= alpha_val.*(sigma_matrix+2);
 
         % remove shadows
-        detection = removeShadows(frame_rgb, detection, background_rgb);
+
+        % thresholds optimised empirically in paper "Shadow Detection: A Survey and Comparative Evaluation of Recent Methods"
+        % beta1 = 0.4;
+        % beta2 = 0.6;
+        % ts = 0.5;
+        % th = 0.1;
+        beta1 = 0.05;
+        beta2 = 0.2;
+        ts = 0.2;
+        th = 0.6;
+        [detection, shadows] = removeShadows(frame_rgb, detection_with_shadows, background_rgb, beta1, beta2, ts, th);
 
         
         % compute metrics with detection and gt
@@ -101,9 +111,16 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         % Create animated gif to add to the slides
         if create_animated_gif
             fig = figure(1);
-            subplot(1,2,1); imshow(gt*255); title('Ground truth');
-            subplot(1,2,2); imshow(detection*255); title('Detection with adaptative method');
-            outfile = strcat('task2_adaptative_alpha', num2str(alpha_val), '_rho', num2str(rho_val), '.gif');
+            % subplot(1,2,1); imshow(gt*255); title('Ground truth');
+            % subplot(1,2,2); imshow(detection*255); title('Detection with adaptative method');
+
+            subplot(2,2,1); imshow(frame_rgb); title('original');
+            subplot(2,2,2); imshow(detection_with_shadows); title('foreground with shadows');
+            subplot(2,2,3); imshow(shadows); title('shadows');
+            subplot(2,2,4); imshow(detection); title('foreground without shadows');
+
+
+            outfile = strcat('task4_shadow_detection.gif');
             fig_frame = getframe(fig);
             im = frame2im(fig_frame);
             if i == 1
@@ -126,28 +143,23 @@ function [mean_matrix,variance_matrix] = adaptModel(frame, detection, mean_matri
 end
 
 
-function [foreground] = removeShadows(frame, foreground, background)
-%Shadow removal alogrithm: Chromacity-based method
+function [foreground, shadows] = removeShadows(frame, foreground, background, beta1, beta2, ts, th)
+% Shadow removal alogrithm: Chromacity-based method
 
-    % thresholds optimised empirically in paper "Shadow Detection: A Survey and Comparative Evaluation of Recent Methods"
-    beta1 = 0.4;
-    beta2 = 0.6;
-    ts = 0.5;
-    th = 0.1;
-    
     % convert images to HSV colorspace
     frame_hsv = rgb2hsv(frame);
     background_hsv = rgb2hsv(background);
     
     % a pixel p is considered to be part of a shadow if the following three conditions are satisfied
-    cond1_value = frame_hsv(:,:,3)./(background_hsv(:,:,3));
-    cond1 = (cond1_value>=beta1) .* (cond1_value<=beta2);
-    cond2 = (frame_hsv(:,:,2)-background_hsv(:,:,2)) <= ts;
-    cond3 = min(abs(frame_hsv(:,:,1)-background_hsv(:,:,1)), 360-abs(frame_hsv(:,:,1)-background_hsv(:,:,1))) <= th;
+    cond1_value = frame_hsv(:,:,3)./background_hsv(:,:,3);
+    cond1 = (cond1_value>=beta1) & (cond1_value<=beta2);
+    cond2 = abs(frame_hsv(:,:,2)-background_hsv(:,:,2)) <= ts;
+    cond3 = abs(frame_hsv(:,:,1)-background_hsv(:,:,1)) <= th;
 
     % apply conditions to remove shadows form foreground
-    shadows = foreground.*cond1.*cond2.*cond3;
-    foreground = foreground - shadows;
+    shadows = foreground&cond1&cond2&cond3;
+    foreground = (~shadows)&foreground;
+
 end
 
 
