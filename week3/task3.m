@@ -4,15 +4,17 @@ close all
 
 addpath('../utils');
 
-videonames = {'fall','highway','traffic'};
+videonames = {'highway','traffic','fall'};
 for v=1:numel(videonames)
     
     videoname = videonames{v};
     %Best Sequence
     % Compute detection with Stauffer and Grimson:
-    sequence = detection_st_gm(videoname);
-    sizes = 20;
-    elements = {'square','diamond','sphere','disk'}; 
+    dir_seq = strcat('task2_results/',videoname,'/');
+    sequence = read_sequence(dir_seq);
+       
+    sizes = 15;
+    elements = {'square','diamond','disk'}; 
     
     best_element = '';
     best_morpho_operetor = '';
@@ -20,17 +22,17 @@ for v=1:numel(videonames)
     best_auc = 0;
     for e=1:numel(elements)
         str_element = elements{e};
-        for size=3:sizes
-            se = strel(str_element,size);
+        for Size=3:sizes
+            se = strel(str_element,Size);
             fprintf(strcat('calculando strel:',str_element));
-            fprintf(' size %f\n',size);
+            fprintf(' size %f\n',Size);
             %test opening
             auc = apply_morpho(sequence, videoname, se, 'opening');
             if(auc > best_auc)
                 best_auc = auc;
                 best_element = str_element;
                 best_morpho_operetor = 'opening';
-                best_element_size = size;
+                best_element_size = Size;
             end
             %test opening
             auc = apply_morpho(sequence, videoname, se, 'closening');
@@ -38,7 +40,16 @@ for v=1:numel(videonames)
                 best_auc = auc;
                 best_element = str_element;
                 best_morpho_operetor = 'closening';
-                best_element_size = size;
+                best_element_size = Size;
+                
+            end
+            %test opening
+            auc = apply_morpho(sequence, videoname, se, 'both');
+            if(auc > best_auc)
+                best_auc = auc;
+                best_element = str_element;
+                best_morpho_operetor = 'both';
+                best_element_size = Size;
                 
             end
         end
@@ -60,14 +71,14 @@ seq_size = size(sequence,3);
 for i=1:seq_size
     if(strcmp(morpho_operator,'opening'))
         sequence(:,:,i) = imopen(sequence(:,:,i),se);
-        sequence(:,:,i) = imfill(sequence(:,:,i),'holes');
     elseif(strcmp(morpho_operator,'closening'))
         sequence(:,:,i) = imclose(sequence(:,:,i),se);
-        sequence(:,:,i) = imfill(sequence(:,:,i),'holes');
-        
+    elseif(strcmp(morpho_operator,'both'))
+        sequence(:,:,i) = imopen(sequence(:,:,i),se);
+        sequence(:,:,i) = imclose(sequence(:,:,i),se);
     end
 end
-[precision, recall, F1, AUC] = test_sequence_2val(sequence, videoname, false, false, '');
+[precision, recall, F1, AUC] = test_sequence_2val(sequence, videoname, false, false, '',true);
 %     fprintf('Precision: %f\n', precision)
 %     fprintf('Recall: %f\n', recall)
 %     fprintf('F1: %f\n', F1)
