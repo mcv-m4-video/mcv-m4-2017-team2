@@ -12,14 +12,14 @@ switch (method)
         % Compute detection with Stauffer and Grimson:
         sequence = detection_st_gm(videoname);
         % Use all the sequence for evaluation:
-        useTrain = 0;
+        useTrain = 1;
         
     case('adaptive')
         % Read detection of adaptive method:
         dirsequence = strcat('./adaptativeModel_sequences/', videoname, '/');
         sequence = double(read_sequence(dirsequence));
         % Use second half of the sequence for evaluation:
-        useTrain = 1;
+        useTrain = 0;
         
     otherwise
         error('Detection method not recognized.')
@@ -29,7 +29,7 @@ end
 sequence_filled = fill_holes(sequence, connectivity);
 
 % Evaluate detection:
-[precision, recall, F1] = test_sequence_2val(sequence_filled, videoname, 0, 0, 'prueba', useTrain);
+[precision, recall, F1] = test_sequence_2val(sequence_filled, videoname, 0, 0, 'prueba', useTrain, size(sequence,3));
 fprintf('Precision: %f\n', precision)
 fprintf('Recall: %f\n', recall)
 fprintf('F1: %f\n', F1)

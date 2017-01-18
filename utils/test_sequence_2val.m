@@ -51,7 +51,6 @@ end
 if (useTrain)
     t = T1;
 else    
-    t = T1 + range_images;
 end
     
 for i = 1:nfiles
