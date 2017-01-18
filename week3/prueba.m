@@ -1,16 +1,17 @@
+clearvars
+close all
 
+addpath('../utils');
 
 videoname = 'fall';
 show_video = 1;
 write_video = 0;
 filename = 'prueba';
 
+useTrain = 0;
+
 dirinput = strcat('./task3_results/', videoname, '/');
-useTrain = 1;
-
-close all
-
-addpath('../utils');
+sequence = double(read_sequence(dirinput));
 
 
 % Evaluate detection:
