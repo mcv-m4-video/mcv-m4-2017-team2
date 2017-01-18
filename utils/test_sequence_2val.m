@@ -1,6 +1,6 @@
 %test sequence version for 2 groundtruth values, uses metrics vectors
 %instead of cumulative numbers
-function [overall_precision, overall_recall, overall_F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename, useTrain)
+function [overall_precision, overall_recall, overall_F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename, useTrain, range_images)
 
 if(write_video && ~show_video)
     error('Not possible to write video and not show it.')
@@ -47,6 +47,8 @@ end
 if (useTrain)
     t = T1;
 else    
+    t = T1 + round(range_images/2);
+end
     
 for i = 1:nfiles
     file_number = sprintf('%06d', t);
