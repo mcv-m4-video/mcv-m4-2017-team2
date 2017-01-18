@@ -1,8 +1,5 @@
 %test sequence version for 2 groundtruth values, uses metrics vectors
-%instead of cumulative numbers.
-%If using all of the images to test, set useTrain to 'true' so that 't' 
-%starts at T1. Else set to 'false' so that you begin test with the later half of the images.
-
+%instead of cumulative numbers
 function [overall_precision, overall_recall, overall_F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename, useTrain, range_images)
 
 if(write_video && ~show_video)
@@ -47,11 +44,12 @@ if(show_video)
     end
 end
 
-%Displace initial file_number. 
+%Displace initial file_number. If using all of the images to test, set
+%useTrain to 'true' so that 't' s
 if (useTrain)
     t = T1;
 else    
-    t = T1 + range_images;
+    t = T1 + round(range_images/2);
 end
     
 for i = 1:nfiles
