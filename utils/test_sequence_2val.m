@@ -1,5 +1,8 @@
 %test sequence version for 2 groundtruth values, uses metrics vectors
-%instead of cumulative numbers
+%instead of cumulative numbers.
+%If using all of the images to test, set useTrain to 'true' so that 't' 
+%starts at T1. Else set to 'false' so that you begin test with the later half of the images.
+
 function [overall_precision, overall_recall, overall_F1, AUC] = test_sequence_2val(sequence, videoname, show_video, write_video, filename, useTrain, range_images)
 
 if(write_video && ~show_video)
@@ -44,14 +47,13 @@ if(show_video)
     end
 end
 
-% If we train with half of the sequence, we only use the second half for
-% testing:
+%Displace initial file_number. 
 if (useTrain)
-    t = T1 + nfiles - 1;
-else
     t = T1;
+else    
+    t = T1 + range_images;
 end
-
+    
 for i = 1:nfiles
     file_number = sprintf('%06d', t);
     gt = imread(strcat(dirGT, 'gt', file_number, '.png'));  % Read the GT image
