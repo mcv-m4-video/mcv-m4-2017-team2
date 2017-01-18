@@ -35,32 +35,110 @@ function task4
     background = 55;
     foreground = 250;
 
-    adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val);
+    exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val);
+
+    exhaustive_grid_search2(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val);
 
 end
 
 
-function adaptive_model(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
+function exhaustive_grid_search(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
+
     [mu_matrix, sigma_matrix, background_rgb] = train_background_rgb(start_img, range_images, input_files, dirInputs);
 
-    create_animated_gif = true;
-    [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif);
-    % [precision, recall, F1] = single_alpha_dual(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, create_animated_gif);
+    %% adaptive modelling with the last 50% of the images
+    beta1_vals = 0.1:0.05:1;
+    beta2_vals = 0.1:0.05:1;
+    ts = 0.5;
+    th = 0.1;
+    % beta1_vals = [0.05];
+    % beta2_vals = [0.2];
+    create_animated_gif = false;
+    max_f1 = 0;
+    max_beta1 = 0;
+    max_beta2 = 0;
+    for beta1_val = beta1_vals
+        for beta2_val = beta2_vals
+
+            fprintf(['trying beta1 = ', num2str(beta1_val), ' and beta2 = ', num2str(beta2_val), '\n']);
+            
+            [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif, beta1_val, beta2_val, ts, th);
+            
+            if mean(F1) > max_f1
+                max_f1 = mean(F1);
+                max_beta1 = beta1_val;
+                max_beta2 = beta2_val;
+            end
+        end
+    end
 
     % Show results in tabular format
-    fprintf('\tWEEK 2 TASK 2 RESULTS\n');
+    fprintf('\tWEEK 3 TASK 4 RESULTS\n');
     fprintf('--------------------------------------------------\n');
-    fprintf(['Alpha = \t', num2str(alpha_val),'\n']);
-    fprintf(['Rho = \t\t', num2str(rho_val),'\n']);
-    fprintf(['Precision = \t', num2str(mean(precision)),'\n']);
-    fprintf(['Recall = \t', num2str(mean(recall)),'\n']);
-    fprintf(['F1 = \t\t', num2str(mean(F1)),'\n']);
+    fprintf(['beta1 = \t', num2str(max_beta1),'\n']);
+    fprintf(['beta2 = \t', num2str(max_beta2),'\n']);
+    fprintf(['F1 = \t\t', num2str(mean(max_f1)),'\n']);
+
 end
 
 
-function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif)
+function exhaustive_grid_search2(start_img, range_images, dirInputs, input_files, dirGT, background, foreground, alpha_val, rho_val)
 
-    %sigma_matrix = sigma_matrix.^2;
+    [mu_matrix, sigma_matrix, background_rgb] = train_background_rgb(start_img, range_images, input_files, dirInputs);
+
+    %% adaptive modelling with the last 50% of the images
+    beta1_vals = 0.1:0.05:1;
+    beta2_vals = 0.1:0.05:1;
+    ts_vals = 0.1:0.05:1;
+    th_vals = 0.1:0.05:1;
+
+    create_animated_gif = false;
+    max_f1 = 0;
+    max_beta1 = 0;
+    max_beta2 = 0;
+    max_ts = 0;
+    max_th = 0;
+    for beta1_val = beta1_vals
+        for beta2_val = beta2_vals
+            for ts_val = ts_vals
+                for th_val = th_vals
+                                
+                    fprintf(['trying beta1 = ', num2str(beta1_val), ' and beta2 = ', num2str(beta2_val), ' and ts = ', num2str(ts_val), ' and th = ', num2str(th_val), '\n']);
+                    
+                    [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif, beta1_val, beta2_val, ts_val, th_val);
+                    
+                    if mean(F1) > max_f1
+                        max_f1 = mean(F1);
+                        max_beta1 = beta1_val;
+                        max_beta2 = beta2_val;
+                        max_ts = ts_val;
+                        max_th = th_val;
+
+                        % Show results in tabular format
+                        fprintf('\tbest results so far\n');
+                        fprintf('--------------------------------------------------\n');
+                        fprintf(['beta1 = \t', num2str(max_beta1),'\n']);
+                        fprintf(['beta2 = \t', num2str(max_beta2),'\n']);
+                        fprintf(['ts = \t', num2str(max_ts),'\n']);
+                        fprintf(['th = \t', num2str(max_th),'\n']);
+                        fprintf(['F1 = \t\t', num2str(mean(max_f1)),'\n']);
+
+                    end
+                end
+            end
+        end
+    end
+
+    % Show results in tabular format
+    fprintf('\tWEEK 3 TASK 4 RESULTS\n');
+    fprintf('--------------------------------------------------\n');
+    fprintf(['beta1 = \t', num2str(max_beta1),'\n']);
+    fprintf(['beta2 = \t', num2str(max_beta2),'\n']);
+    fprintf(['F1 = \t\t', num2str(mean(max_f1)),'\n']);
+
+end
+
+function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, background_rgb, dirGT, create_animated_gif, beta1, beta2, ts, th)
 
     TP_global = 0;
     TN_global = 0;
@@ -88,10 +166,10 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         % beta2 = 0.6;
         % ts = 0.5;
         % th = 0.1;
-        beta1 = 0.05;
-        beta2 = 0.2;
-        ts = 0.2;
-        th = 0.6;
+        % beta1 = 0.05; 
+        % beta2 = 0.2;
+        % ts = 0.2;
+        % th = 0.6;
         [detection, shadows] = removeShadows(frame_rgb, detection_with_shadows, background_rgb, beta1, beta2, ts, th);
 
         
@@ -111,14 +189,10 @@ function [precision, recall, F1] = single_alpha_adaptive(alpha_val, rho_val, mu_
         % Create animated gif to add to the slides
         if create_animated_gif
             fig = figure(1);
-            % subplot(1,2,1); imshow(gt*255); title('Ground truth');
-            % subplot(1,2,2); imshow(detection*255); title('Detection with adaptative method');
-
             subplot(2,2,1); imshow(frame_rgb); title('original');
             subplot(2,2,2); imshow(detection_with_shadows); title('foreground with shadows');
             subplot(2,2,3); imshow(shadows); title('shadows');
             subplot(2,2,4); imshow(detection); title('foreground without shadows');
-
 
             outfile = strcat('task4_shadow_detection.gif');
             fig_frame = getframe(fig);
