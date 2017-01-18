@@ -47,12 +47,11 @@ end
 % If we train with half of the sequence, we only use the second half for
 % testing:
 if (useTrain)
+    t = T1 + nfiles - 1;
+else
     t = T1;
-else    
-    t = T1 + round(range_images/2);
 end
-    
-t = T1;
+
 for i = 1:nfiles
     file_number = sprintf('%06d', t);
     gt = imread(strcat(dirGT, 'gt', file_number, '.png'));  % Read the GT image
