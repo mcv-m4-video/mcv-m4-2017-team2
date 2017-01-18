@@ -10,15 +10,22 @@ addpath('../utils');
 % sequence = detection_st_gm(videoname);
 
 % Read detection of adaptive method:
-dirsequence = strcat('./adaptativeModel_sequences/', videoname, '/');
-sequence = read_sequence(dirsequence);
+switch case (videoname)
+    case('highway')
+        
+    case('fall')
+        
+    case('traffic')
+        dirsequence = './adaptativeModel_sequences
+    otherwise
+        error('Sequence not recognized.')
+end
 
 % Fill holes:
-% sequence = fill_holes(sequence, connectivity);
+sequence = fill_holes(sequence, connectivity);
 
 % Evaluate detection:
-% filename = strcat('st_gm_filled', int2str(connectivity), '_', videoname);
-filename = strcat('adaptive_filled', int2str(connectivity), '_', videoname);
+filename = strcat('st_gm_filled', int2str(connectivity), '_', videoname);
 [precision, recall, F1] = test_sequence(sequence, videoname, show_video, write_video, filename);
 fprintf('Precision: %f\n', precision)
 fprintf('Recall: %f\n', recall)

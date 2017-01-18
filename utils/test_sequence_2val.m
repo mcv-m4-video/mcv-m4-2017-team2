@@ -14,18 +14,27 @@ end
 
 if (strcmp(videoname, 'highway'))
     T1 = 1050;
+    T2 = 1350;
     dirGT = '../datasets/cdvd/dataset/baseline/highway/groundtruth/';
     
 elseif (strcmp(videoname, 'fall'))
     T1 = 1460;
+    T2 = 1560;
     dirGT = '../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/';
     
 elseif (strcmp(videoname, 'traffic'))
     T1 = 950;
+    T2 = 1050;
     dirGT = '../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/';
     
 else
     error('videoname not recognized.')
+end
+
+% If we train with half of the sequence, we only use the second half for
+% testing:
+if(useTrain)
+    T1 = round(T1 + T2) / 2;
 end
 
 nfiles = size(sequence,3);
@@ -43,11 +52,8 @@ if(show_video)
         open(v)
     end
 end
-
-if (useTrain)
-    t = T1;
-else    
     
+t = T1;
 for i = 1:nfiles
     file_number = sprintf('%06d', t);
     gt = imread(strcat(dirGT, 'gt', file_number, '.png'));  % Read the GT image
