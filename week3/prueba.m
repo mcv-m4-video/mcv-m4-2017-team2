@@ -3,7 +3,7 @@ close all
 
 addpath('../utils');
 
-videoname = 'traffic';
+videoname = 'highway';
 show_video = 1;
 write_video = 0;
 filename = 'prueba';
