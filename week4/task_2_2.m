@@ -44,7 +44,7 @@ function PointFeatureMatchingVideoStabilization(hVideoSrc)
     correctedMean = imgBp;
     ii = 2;
     Hcumulative = eye(3);
-    while ~isDone(hVideoSrc)  % && ii < 10
+    while ~isDone(hVideoSrc) && ii < 50
         % Read in new frame
         imgA = imgB; % z^-1
         imgAp = imgBp; % z^-1
