@@ -44,7 +44,7 @@ function PointFeatureMatchingVideoStabilization(hVideoSrc)
     correctedMean = imgBp;
     ii = 2;
     Hcumulative = eye(3);
-    while ~isDone(hVideoSrc) && ii < 50
+    while ~isDone(hVideoSrc) && ii < 45
         % Read in new frame
         imgA = imgB; % z^-1
         imgAp = imgBp; % z^-1
@@ -62,6 +62,20 @@ function PointFeatureMatchingVideoStabilization(hVideoSrc)
         correctedMean = correctedMean + imgBp;
 
         ii = ii+1;
+
+        % Save original vs stabilized video on animated gif
+        fig = figure(2);
+        subplot(1,2,1); imshow(imgB); title('Without stabilization');
+        subplot(1,2,2); imshow(imgBp); title('With Point Feature Matching Video Stabilization');
+        outfile = strcat('task_2_2_PointFeatureMatchingVideoStabilization.gif');
+        fig_frame = getframe(fig);
+        im = frame2im(fig_frame);
+        if ii == 3
+            imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
+        else
+            imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
+        end
+
     end
     correctedMean = correctedMean/(ii-2);
     movMean = movMean/(ii-2);
