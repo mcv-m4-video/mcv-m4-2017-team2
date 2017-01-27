@@ -36,6 +36,9 @@ Offset = [0 0];
 Target = zeros(18,22);
 firstTime = true;
 
+i = 1;
+save_stabilized_images = false;
+
 while ~isDone(hVideoSource)
     input = step(hVideoSource);
 
@@ -79,18 +82,17 @@ while ~isDone(hVideoSource)
     % Display video
     step(hVideoOut, [input(:,:,1) Stabilized]);
 
-    % Save animated gif
-    fig = figure(2);
-    subplot(1,2,1); imshow(input(:,:,1)); title('original');
-    subplot(1,2,2); imshow(Stabilized); title('stabilized');
-    outfile = strcat('task_2_2_TargetTrackingVideoStabilizationSharp.gif');
-    fig_frame = getframe(fig);
-    im = frame2im(fig_frame);
-    if firstTime
-        imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
-    else
-        imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
+    % Save stabilized images to later creat eanimated gif (i.e. using http://gifmaker.me/)
+    if save_stabilized_images
+      fig = figure(2);
+      subplot(1,2,1); imshow(input(:,:,1)); title('original');
+      subplot(1,2,2); imshow(Stabilized); title('stabilized');
+      fig_frame = getframe(fig);
+      im = frame2im(fig_frame);
+      imwrite(im, strcat('stabilized/image', num2str(i), '.jpg'));
+      i = i + 1;
     end
+
 end
 
 release(hVideoSource);
