@@ -3,7 +3,6 @@ datasets/cdvd/dataset/*
 datasets/KITTI_devkit/data_stereo_flow/*
 week2/results/*
 week4/task_2_2/VSBlockBasedParametricMotionModel/traffic/*
-week4/task_2_2/VSBlockBasedParametricMotionModel/traffic_short/*
 week4/task_2_2/VSPointFeatureMatching/resources/seq157/*
 week4/task_2_2/VSPointFeatureMatching/resources/seq45/*
 week4/task_2_2/VSPointFeatureMatching/resources/traffic/*
