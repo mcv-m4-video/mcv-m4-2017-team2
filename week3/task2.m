@@ -79,9 +79,9 @@ AUCmax_fall = AUC(1,indexmaxfall);
 AUCmax_high = AUC(2,indexmaxhigh);
 AUCmax_traf = AUC(3,indexmaxtraf);
 
-label_1 = strcat({'Fall max AUC = '},num2str(AUCmax_fall));
-label_2 = strcat({'Highway max AUC = '},num2str(AUCmax_high));
-label_3 = strcat({'Traffic max AUC = '},num2str(AUCmax_traf));
+label_1 = strcat({'Fall max AUC = '},num2str(AUCmax_fall),{' ('},num2str(P_number(indexmaxfall)),')');
+label_2 = strcat({'Highway max AUC = '},num2str(AUCmax_high),{' ('},num2str(P_number(indexmaxhigh)),')');
+label_3 = strcat({'Traffic max AUC = '},num2str(AUCmax_traf),{' ('},num2str(P_number(indexmaxtraf)),')');
 
 p_str_fall = strcat({'P = '},num2str(P_number(indexmaxfall)));
 p_str_high = strcat({'P = '},num2str(P_number(indexmaxhigh)));
@@ -100,5 +100,10 @@ text(P_number(indexmaxtraf),(AUC(3,indexmaxfall)+0.02),p_str_traf,'HorizontalAli
 
 hold on;
 plot(P_number(indexmaxfall), AUC(1,indexmaxfall), 'o', P_number(indexmaxhigh), AUC(2,indexmaxhigh), 'o', P_number(indexmaxtraf), AUC(3,indexmaxtraf), 'o');
+
+%P for max average AUC
+indexmaxcomb = find(max(sum(AUC,1))==sum(AUC,1),1,'first');
+bestP = P_number(indexmaxcomb);
+AUC_mean_max = mean([AUC(1,indexmaxcomb),AUC(2,indexmaxcomb),AUC(3,indexmaxcomb)]);
 
 end

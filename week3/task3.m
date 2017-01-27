@@ -35,11 +35,11 @@ for v=1:numel(videonames)
                 best_element_size = Size;
             end
             %test opening
-            auc = apply_morpho(sequence, videoname, se, 'closening');
+            auc = apply_morpho(sequence, videoname, se, 'closing');
             if(auc > best_auc)
                 best_auc = auc;
                 best_element = str_element;
-                best_morpho_operetor = 'closening';
+                best_morpho_operetor = 'closing';
                 best_element_size = Size;
                 
             end
@@ -71,7 +71,7 @@ seq_size = size(sequence,3);
 for i=1:seq_size
     if(strcmp(morpho_operator,'opening'))
         sequence(:,:,i) = imopen(sequence(:,:,i),se);
-    elseif(strcmp(morpho_operator,'closening'))
+    elseif(strcmp(morpho_operator,'closing'))
         sequence(:,:,i) = imclose(sequence(:,:,i),se);
     elseif(strcmp(morpho_operator,'both'))
         sequence(:,:,i) = imopen(sequence(:,:,i),se);
