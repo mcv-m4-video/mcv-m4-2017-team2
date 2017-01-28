@@ -37,7 +37,9 @@ Target = zeros(18,22);
 firstTime = true;
 
 i = 1;
-save_stabilized_images = false;
+j = 950;
+save_stabilized_images = true;
+save_stabilized_dual_images = true;
 
 while ~isDone(hVideoSource)
     input = step(hVideoSource);
@@ -83,14 +85,25 @@ while ~isDone(hVideoSource)
     step(hVideoOut, [input(:,:,1) Stabilized]);
 
     % Save stabilized images to later creat eanimated gif (i.e. using http://gifmaker.me/)
-    if save_stabilized_images
+    if save_stabilized_dual_images
       fig = figure(2);
       subplot(1,2,1); imshow(input(:,:,1)); title('original');
       subplot(1,2,2); imshow(Stabilized); title('stabilized');
       fig_frame = getframe(fig);
       im = frame2im(fig_frame);
-      imwrite(im, strcat('stabilized/image', num2str(i), '.jpg'));
+      imwrite(im, strcat('stabilized_dual/image', num2str(i), '.jpg'));
       i = i + 1;
+    end
+
+    % Save stabilized images to later creat eanimated gif (i.e. using http://gifmaker.me/)
+    if save_stabilized_images
+      if j < 1000
+          leading_zeros = '000';
+      else
+          leading_zeros = '00';
+      end
+      imwrite(Stabilized, strcat('stabilized/in', leading_zeros, num2str(j), '.jpg'));
+      j = j + 1;
     end
 
 end

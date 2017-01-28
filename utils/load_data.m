@@ -38,6 +38,15 @@ switch data
         %Write the dataset option from the 3 above:
         dirInputs = '../datasets/cdvd/dataset/cameraJitter/traffic/input/';
         dirGT = '../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/';
+
+    case 'traffic_stabilized_target_tracking'
+        %First image to use from set:
+        start_img = start_traffic;
+        %Amount of images to use from set:
+        range_images = range_traffic;
+        %Write the dataset option from the 3 above:
+        dirInputs = '../week4/task_2_2/VSTargetTracking/stabilized/';
+        dirGT = '../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/';
 end
 
 end
