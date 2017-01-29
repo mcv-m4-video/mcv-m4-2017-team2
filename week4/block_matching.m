@@ -31,8 +31,8 @@ for i = 1:block_size:ni
                 if error < min_error
                     min_error = error;
                     %save the movement in the same position of the current block
-                    x_movement(i:i+block_size-1,j:j+block_size-1) = step_x;
-                    y_movement(i:i+block_size-1,j:j+block_size-1) = step_y;
+                    x_movement(i:i+block_size-1,j:j+block_size-1) = step_x-i;
+                    y_movement(i:i+block_size-1,j:j+block_size-1) = step_y-j;
                 end
             end
         end

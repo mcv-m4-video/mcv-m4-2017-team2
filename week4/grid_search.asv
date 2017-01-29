@@ -1,0 +1,34 @@
+function grid_search
+
+addpath('../datasets');
+addpath('../datasets/KITTI_devkit');
+addpath('../utils');
+addpath('../week1');
+
+frame_size = min(size(imread('../datasets/KITTI_devkit/data_stereo_flow/training/image_0/000045_10.png')));
+block_size = zeros(1,20); 
+search_area = zeros(1,20);
+msen = zeros(1,20);
+pepn = zeros(1,20);
+
+for i=1:20
+    block_size(i) = 2*randi([10, round(frame_size/10)]);
+    search_area(i) = randi([2, round(frame_size/20)]);
+    
+    [msen(i), pepn(i)]= task1_1(block_size, search_area);
+end
+
+parameters = [block_size; search_area];
+scores_conj = msen .* pepn;
+
+index_minima = find(scores_conj == min(scores_conj));
+
+best_case_bs = parameters(1,index_minima);
+best_case_sa = parameters(2,index_minima);
+
+fprintf('\t\tWEEK 4 TASK 1.1 GRID SEARCH BEST RESULTS\n');
+fprintf('Sequence\t\tBlock Size\t\tSearch Area\t\tMSEN\t\tPEPN\n');
+fprintf('--------------------------------------------------\n');
+fprintf(['Seq ',num2str(seq_id),'\t\t', num2str(best_case_bs),'\t\t', num2str(best_case_sa),'\t\t', num2str(msen), '\t\t', num2str(pepn*100),'\n']);
+
+end

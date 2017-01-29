@@ -1,0 +1,4 @@
+		WEEK 4 TASK 1.1 GRID SEARCH BEST RESULTS
+Sequence		Block Size		Search Area		MSEN		PEPN
+--------------------------------------------------
+Seq 45		38		2		10.6631		77.7226

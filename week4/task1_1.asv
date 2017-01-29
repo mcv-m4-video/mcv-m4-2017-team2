@@ -1,6 +1,5 @@
-function [msen, pepn]= task1_1(seq_id, block_size, search_area)
-
-%clear all; close all;
+function [msen, pepn]= task1_1(block_size)
+clear all; close all;
 
 addpath('../datasets');
 addpath('../datasets/KITTI_devkit');
@@ -21,8 +20,8 @@ elseif seq_id == 157
 end
 
 
-% block_size = 20;
-% search_area = 20;
+block_size = 20;
+search_area = 20;
 % optical flow using block matching
 [flow_estimation_x, flow_estimation_y]  = block_matching(img1, img2, block_size, search_area);
 
@@ -39,10 +38,10 @@ msen = sum(error(:))/sum(error(:)>0);%mean of the matrix elements
 %PEPN
 pepn = length(find(error>3))/length(find(F_gt_val));
 
-% fprintf('\t\tWEEK 4 TASK 1.1 RESULTS\n');
-% fprintf('Sequence\t\tMSEN\t\tPEPN\n');
-% fprintf('--------------------------------------------------\n');
-% fprintf(['Seq ',num2str(seq_id),'\t\t', num2str(msen), '\t\t', num2str(pepn*100),'\n']);
+fprintf('\t\tWEEK 4 TASK 1.1 RESULTS\n');
+fprintf('Sequence\t\tMSEN\t\tPEPN\n');
+fprintf('--------------------------------------------------\n');
+fprintf(['Seq ',num2str(seq_id),'\t\t', num2str(msen), '\t\t', num2str(pepn*100),'\n']);
 end
 
 
