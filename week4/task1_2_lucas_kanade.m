@@ -25,15 +25,9 @@ flow = estimateFlow(opticFlow, img2);
 flow_estimation_x = flow.Vx;
 flow_estimation_y = flow.Vy;
 
-% figure()
-% subplot(2,2,1)
-% imshow(flow.Vx)
-% subplot(2,2,2)
-% imshow(flow.Vy)
-% subplot(2,2,3)
-% imshow(flow.Orientation)
-% subplot(2,2,4)
-% imshow(flow.Magnitude)
+% Visualize:
+step = 10;
+visualize_optical_flow(img1, flow_estimation_x, flow_estimation_y, step)
 
 %combine the flow_estimations to calculate error using kitti dev functions
 flow_estimated(:,:,1) = flow_estimation_x;
