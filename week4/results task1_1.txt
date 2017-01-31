@@ -2,3 +2,8 @@
 Sequence		Block Size		Search Area		MSEN		PEPN
 --------------------------------------------------
 Seq 45	Best Block size:	60	Best Search area:	10	MSEN:	16.6984	PEPN:	40.4936
+
+WEEK 4 TASK 1.1 GRID SEARCH BEST RESULTS
+Sequence		Block Size		Search Area		MSEN		PEPN
+--------------------------------------------------
+Seq 157	Best Block size:	50	Best Search area:	5	MSEN:	13.0615	PEPN:	29.3783
