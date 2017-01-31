@@ -22,7 +22,7 @@ function videoStabilizationPipeline
     %% load data
     % Datasets to use: 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
     % Choose dataset images to work on from the above:
-    data = 'traffic';
+    data = 'traffic_stabilized_target_tracking';
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
 
