@@ -25,9 +25,9 @@ for i = 1:block_size:ni
         %search the current block in the past img
         for step_x = begin_search_area_x:1:end_search_area_x
             for step_y = begin_search_area_y:1:end_search_area_y
-                past_block = img2(step_x:step_x+block_size-1, step_y:step_y+block_size-1);
+                fut_block = img2(step_x:step_x+block_size-1, step_y:step_y+block_size-1);
                 %difference between the 2 blocks
-                error = sum(sum((current_block-past_block).^2));
+                error = sum(sum((current_block-fut_block).^2));
                 if error < min_error
                     min_error = error;
                     %save the movement in the same position of the current block

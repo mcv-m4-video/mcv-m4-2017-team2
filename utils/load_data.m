@@ -6,9 +6,9 @@ start_fall    = 1460;
 start_traffic = 950;
 
 %Range of each dataset:
-range_highway = 1350 - 1050;
-range_fall    = 1560 - 1460;
-range_traffic = 1050 - 950;
+range_highway = 1350 - 1049;
+range_fall    = 1560 - 1459;
+range_traffic = 1050 - 949;
 
 %setting paths and dependant variables
 switch data
