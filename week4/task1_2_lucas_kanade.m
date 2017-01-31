@@ -1,5 +1,5 @@
-%%%%%%% Optical flow with Horn - Schunk
-function task1_3_horn_schunk(seq_id)
+%%%%%%% Optical flow with Lucas - Kanade
+function task1_2_lucas_kanade(seq_id)
 
 addpath('../utils');
 addpath('../datasets/KITTI_devkit');
@@ -19,7 +19,7 @@ end
 
 
 % Optical flow using Horn-Schunk:
-opticFlow = opticalFlowHS;
+opticFlow = opticalFlowLK;
 estimateFlow(opticFlow, img1);
 flow = estimateFlow(opticFlow, img2);
 flow_estimation_x = flow.Vx;
@@ -48,7 +48,7 @@ msen = sum(err(:))/sum(err(:)>0);%mean of the matrix elements
 %PEPN
 pepn = length(find(err>3))/length(find(F_gt_val));
 
-fprintf('\t\tWEEK 4 TASK 1.3 - Horn-Schunk RESULTS\n');
+fprintf('\t\tWEEK 4 TASK 1.2 - Lucas-Kanade RESULTS\n');
 fprintf('Sequence\t\tMSEN\t\tPEPN\n');
 fprintf('--------------------------------------------------\n');
 fprintf(['Seq ',num2str(seq_id),'\t\t', num2str(msen), '\t\t', num2str(pepn*100),'\n']);
