@@ -76,10 +76,27 @@ AUC = trapz(precision,2)/size(TP_,2);
 % ylabel('Pixels');
 % legend('TP','TN','FP','FN');
 
-figure(3)
-plot(recall, transpose(precision), 'g');
-title(strcat({'Recall vs Precision & AUC for dataset '},data));
-xlabel('Recall');
-ylabel('Precision');
-legend('Recall vs Precision','Area under the curve');
+% figure(3)
+% plot(recall, transpose(precision), 'g');
+% title(strcat({'Recall vs Precision & AUC for dataset '},data));
+% xlabel('Recall');
+% ylabel('Precision');
+% legend('Recall vs Precision','Area under the curve');
+
+%Calculate ROC
+TPR = TP_./(TP_ +FN_);
+FPR = FP_./(FP_ +TN_);
+max_index = find(TPR == max(TPR));
+max_alpha = alpha_vect(max_index);
+
+figure(4)
+plot(FPR , TPR);
+title('ROC curve');
+xlabel('FP ratio');
+ylabel('TP ratio');
+hold on;
+plot(FPR(max_index),TPR(max_index),'o');
+legend(strcat({'Alpha max: '}, num2str(max_alpha)));
+
+
 end
