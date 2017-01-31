@@ -22,50 +22,38 @@ function videoStabilizationPipeline
     %% load data
     % Datasets to use: 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
     % Choose dataset images to work on from the above:
-    data = 'traffic_stabilized_target_tracking';
-    [start_img, range_images, dirInputs] = load_data(data);
+    data = 'traffic';
+    [start_img, range_images, dirInputs, dirGT] = load_data(data);
     input_files = list_files(dirInputs);
-
-    cropImage = false;
-    cropSize = 0;
 
     switch data
         case 'highway'
             % Best results adaptive: Alpha = 2.75, Rho = 0.2, F1 = 0.72946
-            alpha_val = 2.75;
             rho_val = 0.2;
-            dirGT = strcat('../datasets/cdvd/dataset/baseline/highway/groundtruth/');
         case 'fall'
             % Best results adaptive: Alpha = 3.25, Rho = 0.05, F1 = 0.70262
-            alpha_val = 3.25;
             rho_val = 0.05;
-            dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
         case 'traffic'
             % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
-            alpha_val = 3.25;
             rho_val = 0.15; 
-            dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
         case 'traffic_stabilized_target_tracking'
             % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
-            alpha_val = 3.25;
             rho_val = 0.15; 
-            dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
-            cropImage = true;
-            cropSize = 20;
     end
 
     background = 55;
     foreground = 250;
 
     alpha_vect = 0.25:0.25:10;
+    % alpha_vect = [2.5];
 
-    [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs, cropImage, cropSize);
+    [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
-    [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val, cropImage, cropSize)
+    [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val)
 end
 
 
-function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val, cropImage, cropSize)
+function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val)
 %function for sweeping through several thresholds to compare performance
 
     tic
@@ -99,60 +87,27 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
                 img = double(imread(strcat(dirInputs,'in',file_number,'.jpg')));
             end
 
-            % when we work with stabilized images, the margins need to be cut out
-            if cropImage
-                img = img(20:size(img,1)-20,20:size(img,2)-20,:);
-            end
-
             test_backg_in(:,:,i) = img;
 
-            detection(:,:,i) = (abs(test_backg_in(:,:,i)-mu_matrix) >= (alpha * (sigma_matrix + 2)));
+            detection(:,:,i) = double((abs(test_backg_in(:,:,i)-mu_matrix) >= (alpha * (sigma_matrix + 2))));
 
             % fill holes (week 3 task 1)
-            connectivity = 8;  % can be either 4 or 8
-            detection(:,:,i) = imfill(detection(:,:,i), connectivity, 'holes');
+            connectivity = 4;  % can be either 4 or 8
+            detection(:,:,i) = imfill(detection(:,:,i), connectivity);
 
             % remove noise (week 3 task 2)
             % not applied because we said it does not change the results for traffic sequence
-            detection(:,:,i) = bwareaopen(detection(:,:,i),4);
+            detection(:,:,i) = bwareaopen(detection(:,:,i),500);
 
-
-
-
-
-%             % fill holes (week 3 task 1)
-%             connectivity = 8;  % can be either 4 or 8
-%             img_filled = imfill(detection(:,:,i), connectivity, 'holes');
-% 
-%             % remove noise (week 3 task 2)
-%             % not applied because we said it does not change the results for traffic sequence
-%             img_bwareaopen = bwareaopen(detection(:,:,i),4);
-% 
-%             % apply morphological operators  (week 3 task 3)
-%             se = strel('square',15);
-%             img_morpho = imopen(detection(:,:,i),se);
-%             img_morpho = imclose(img_morpho,se);
-% 
-%             figure(10);
-%             subplot(2,2,1); imshow(detection(:,:,i)); title('detection(:,:,i)');
-%             subplot(2,2,2); imshow(img_filled); title('img_filled');
-%             subplot(2,2,3); imshow(img_bwareaopen); title('img_bwareaopen');
-%             subplot(2,2,4); imshow(img_morpho); title('img_morpho');
-%             pause();
-
-
-
-
+            % apply morphological operators  (week 3 task 3)
+            se = strel('square',15);
+            detection(:,:,i) = imopen(detection(:,:,i),se);
+            detection(:,:,i) = imclose(detection(:,:,i),se);
 
 
             gt = imread(strcat(dirGT,'gt',file_number,'.png'));
             gt_back = gt <= background;
             gt_fore = gt >= foreground;
-
-           if cropImage
-               gt_back = gt_back(cropSize:size(gt_back,1)-cropSize,cropSize:size(gt_back,2)-cropSize,:);
-               gt_fore = gt_fore(cropSize:size(gt_fore,1)-cropSize,cropSize:size(gt_fore,2)-cropSize,:);
-           end
 
             [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i), data);
 
@@ -181,14 +136,7 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
     %AUC of Precision metrics
     AUC = trapz(precision,2)/size(TP_,2);
 
-    %AUC TPR
-    % AUC = trapz((TP_ ./(TP_ + FN_)),2)/size(TP_,2);
-
-    %For saving environment variables on debugging mode:
-    % filename = strcat(data,'_task1_results.mat');
-    % save(filename,'TP_','TN_','FP_','FN_', 'precision', 'recall', 'F1','alpha_vect');
-
-    % x= alpha_vect;
+    % x = alpha_vect;
     % figure(1)
     % plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
     % title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
