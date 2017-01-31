@@ -40,7 +40,14 @@ fprintf('Sequence\t\tBlock Size\t\tSearch Area\t\tMSEN\t\tPEPN\n');
 fprintf('--------------------------------------------------\n');
 fprintf(['Seq ',num2str(seq_id),'\tBest Block size:\t', num2str(best_case_bs),'\tBest Search area:\t', num2str(best_case_sa),'\tMSEN:\t', num2str(msen(index_minima_i,index_minima_j)), '\tPEPN:\t', num2str(pepn(index_minima_i,index_minima_j)*100),'\n']);
 
+filename = strcat('seq_',num2str(seq_id),'_results.mat');
+save(filename,'msen','pepn' );
 %GRAPH SWEEP
-%figure()
-%plot(search_area, pepn);
+figure()
+plot(search_area, pepn);
+title(strcat({'PEPN vs search area for seq '},num2str(seq_id)));
+xlabel('Search Area');
+ylabel('PEPN');
+legend('Block size: 20','Block size: 30','Block size: 40','Block size: 50','Block size: 60','Block size: 70');
+
 end
