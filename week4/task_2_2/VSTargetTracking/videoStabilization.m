@@ -14,11 +14,11 @@ hTM = vision.TemplateMatcher('ROIInputPort', true, ...
 hVideoOut = vision.VideoPlayer('Name', 'Video Stabilization');
 hVideoOut.Position(1) = round(0.4*hVideoOut.Position(1));
 hVideoOut.Position(2) = round(1.5*(hVideoOut.Position(2)));
-hVideoOut.Position(3:4) = [650 350];
+hVideoOut.Position(3:4) = [320 240];
 
 pos.template_orig = [60 150];  % [109 100]; % [x y] upper left corner
 pos.template_size = [20 20];  % [22 18];   % [width height]
-pos.search_border = [15 10];   % max horizontal and vertical displacement
+pos.search_border = [20 20];   % max horizontal and vertical displacement
 pos.template_center = floor((pos.template_size-1)/2);
 pos.template_center_pos = (pos.template_orig + pos.template_center - 1);
 fileInfo = info(hVideoSource);
@@ -39,7 +39,7 @@ firstTime = true;
 i = 1;
 j = 950;
 save_stabilized_images = true;
-save_stabilized_dual_images = true;
+save_stabilized_dual_images = false;
 
 while ~isDone(hVideoSource)
     input = step(hVideoSource);
@@ -84,7 +84,7 @@ while ~isDone(hVideoSource)
     % Display video
     step(hVideoOut, [input(:,:,1) Stabilized]);
 
-    % Save stabilized images to later creat eanimated gif (i.e. using http://gifmaker.me/)
+    % Save stabilized images to later create animated gif (i.e. using http://gifmaker.me/)
     if save_stabilized_dual_images
       fig = figure(2);
       subplot(1,2,1); imshow(input(:,:,1)); title('original');
@@ -95,14 +95,22 @@ while ~isDone(hVideoSource)
       i = i + 1;
     end
 
-    % Save stabilized images to later creat eanimated gif (i.e. using http://gifmaker.me/)
+    % Save stabilized images to use them on the videoStabilizationPipeline.m
     if save_stabilized_images
       if j < 1000
           leading_zeros = '000';
       else
           leading_zeros = '00';
       end
-      imwrite(Stabilized, strcat('stabilized/in', leading_zeros, num2str(j), '.jpg'));
+      imwrite(Stabilized, strcat('stabilized_input/in', leading_zeros, num2str(j), '.jpg'));
+
+      % generate new ground truth applying transformation to current gt
+      gt_img = imread(strcat('../../../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/gt',leading_zeros, num2str(j),'.png'));
+      gt_img = imtranslate(gt_img, Offset, 'linear');
+      gt_img(:, BorderCols) = 0;
+      gt_img(BorderRows, :) = 0;
+      imwrite(gt_img, strcat('stabilized_gt/gt', leading_zeros, num2str(j), '.png'));
+
       j = j + 1;
     end
 

@@ -38,14 +38,15 @@ function videoStabilizationPipeline
             rho_val = 0.15; 
         case 'traffic_stabilized_target_tracking'
             % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
-            rho_val = 0.15; 
+            rho_val = 0.2; 
     end
 
     background = 55;
-    foreground = 250;
+    foreground = 255;
 
-    alpha_vect = 0.25:0.25:10;
-    % alpha_vect = [2.5];
+    % alpha_vect = 0:0.25:8;
+    alpha_vect = [2.5];  % traffic_stabilized_target_tracking
+    % alpha_vect = [2.5];  % traffic
 
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
@@ -109,6 +110,11 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
             gt_back = gt <= background;
             gt_fore = gt >= foreground;
 
+            fig = figure(10);
+            subplot(1,2,1); imshow(gt_fore); title('ground truth');
+            subplot(1,2,2); imshow(detection(:,:,i)); title('detection');
+            % pause();
+
             [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i), data);
 
             %option of getting overall metrics
@@ -136,20 +142,20 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
     %AUC of Precision metrics
     AUC = trapz(precision,2)/size(TP_,2);
 
-    % x = alpha_vect;
-    % figure(1)
-    % plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
-    % title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
-    % xlabel('Threshold');
-    % ylabel('Measure');
-    % legend('Precision','Recall','F1');
+    x = alpha_vect;
+    figure(1)
+    plot(x, transpose(precision), 'b', x, transpose(recall), 'r',  x, transpose(F1), 'k');
+    title(strcat({'Precision, Recall & F1 vs Threshold for dataset '},data));
+    xlabel('Threshold');
+    ylabel('Measure');
+    legend('Precision','Recall','F1');
 
-    % figure(2)
-    % plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
-    % title(strcat({'TP, TN, FP & FN vs Threshold for '},data));
-    % xlabel('Threshold');
-    % ylabel('Pixels');
-    % legend('TP','TN','FP','FN');
+    figure(2)
+    plot(x, transpose(TP_),'b', x, transpose(TN_),'g', x, transpose(FP_),'r', x, transpose(FN_));
+    title(strcat({'TP, TN, FP & FN vs Threshold for '},data));
+    xlabel('Threshold');
+    ylabel('Pixels');
+    legend('TP','TN','FP','FN');
 
     figure(3)
     plot(recall, transpose(precision), 'g');
