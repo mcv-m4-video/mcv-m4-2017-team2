@@ -11,7 +11,7 @@ for i = 1:block_size:ni
         min_error = inf; %initialize the min error with infinito
         
         %boundary constraints for the current_block
-        if ( i+block_size-1 > ni ) || ( j+block_size-1 > nj )
+        if ( i+block_size-1 > ni) || ( j+block_size-1 > nj)
             continue
         end
         % Save the current block in a variable
@@ -31,8 +31,8 @@ for i = 1:block_size:ni
                 if error < min_error
                     min_error = error;
                     %save the movement in the same position of the current block
-                    x_movement(i:i+block_size-1,j:j+block_size-1) = step_x-i;
-                    y_movement(i:i+block_size-1,j:j+block_size-1) = step_y-j;
+                    x_movement(i:i+block_size-1,j:j+block_size-1) = step_x;
+                    y_movement(i:i+block_size-1,j:j+block_size-1) = step_y;
                 end
             end
         end
