@@ -20,11 +20,14 @@ function videoStabilizationPipeline
     addpath('../week2');
 
     %% load data
-    % Datasets to use 'highway', 'fall' or 'traffic'
+    % Datasets to use: 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
     % Choose dataset images to work on from the above:
     data = 'traffic';
     [start_img, range_images, dirInputs] = load_data(data);
     input_files = list_files(dirInputs);
+
+    cropImage = false;
+    cropSize = 0;
 
     switch data
         case 'highway'
@@ -37,11 +40,18 @@ function videoStabilizationPipeline
             alpha_val = 3.25;
             rho_val = 0.05;
             dirGT = strcat('../datasets/cdvd/dataset/dynamicBackground/fall/groundtruth/');
-        case {'traffic', 'traffic_stabilized_target_tracking'}
+        case 'traffic'
             % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
             alpha_val = 3.25;
             rho_val = 0.15; 
             dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
+        case 'traffic_stabilized_target_tracking'
+            % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
+            alpha_val = 3.25;
+            rho_val = 0.15; 
+            dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
+            cropImage = true;
+            cropSize = 20;
     end
 
     background = 55;
@@ -49,13 +59,13 @@ function videoStabilizationPipeline
 
     alpha_vect = 0.25:0.25:10;
 
-    [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
+    [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs, cropImage, cropSize);
 
-    [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val)
+    [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val, cropImage, cropSize)
 end
 
 
-function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val)
+function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val, cropImage, cropSize)
 %function for sweeping through several thresholds to compare performance
 
     tic
@@ -84,30 +94,67 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
             index = i + (start_img + range_images/2) - 1;
             file_number = input_files(index).name(3:8);
             try
-                test_backg_in(:,:,i) = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
+                img = double(rgb2gray(imread(strcat(dirInputs,'in',file_number,'.jpg'))));
             catch
-                test_backg_in(:,:,i) = double(imread(strcat(dirInputs,'in',file_number,'.jpg')));
+                img = double(imread(strcat(dirInputs,'in',file_number,'.jpg')));
             end
+
+            % when we work with stabilized images, the margins need to be cut out
+            if cropImage
+                img = img(20:size(img,1)-20,20:size(img,2)-20,:);
+            end
+
+            test_backg_in(:,:,i) = img;
+
             detection(:,:,i) = (abs(test_backg_in(:,:,i)-mu_matrix) >= (alpha * (sigma_matrix + 2)));
 
             % fill holes (week 3 task 1)
-            % connectivity = 4;  % can be either 4 or 8
-            % detection(:,:,i) = imfill(detection(:,:,i), connectivity);
+            connectivity = 8;  % can be either 4 or 8
+            detection(:,:,i) = imfill(detection(:,:,i), connectivity, 'holes');
 
             % remove noise (week 3 task 2)
             % not applied because we said it does not change the results for traffic sequence
-            % detection(:,:,i) = bwareaopen(detection(:,:,i),4);
+            detection(:,:,i) = bwareaopen(detection(:,:,i),4);
 
-            % apply morphological operators  (week 3 task 3)
-            se = strel('square',15);
-            detection(:,:,i) = imopen(detection(:,:,i),se);
-            detection(:,:,i) = imclose(detection(:,:,i),se);
+
+
+
+
+%             % fill holes (week 3 task 1)
+%             connectivity = 8;  % can be either 4 or 8
+%             img_filled = imfill(detection(:,:,i), connectivity, 'holes');
+% 
+%             % remove noise (week 3 task 2)
+%             % not applied because we said it does not change the results for traffic sequence
+%             img_bwareaopen = bwareaopen(detection(:,:,i),4);
+% 
+%             % apply morphological operators  (week 3 task 3)
+%             se = strel('square',15);
+%             img_morpho = imopen(detection(:,:,i),se);
+%             img_morpho = imclose(img_morpho,se);
+% 
+%             figure(10);
+%             subplot(2,2,1); imshow(detection(:,:,i)); title('detection(:,:,i)');
+%             subplot(2,2,2); imshow(img_filled); title('img_filled');
+%             subplot(2,2,3); imshow(img_bwareaopen); title('img_bwareaopen');
+%             subplot(2,2,4); imshow(img_morpho); title('img_morpho');
+%             pause();
+
+
+
+
+
 
             gt = imread(strcat(dirGT,'gt',file_number,'.png'));
             gt_back = gt <= background;
             gt_fore = gt >= foreground;
 
-            [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i));
+           if cropImage
+               gt_back = gt_back(cropSize:size(gt_back,1)-cropSize,cropSize:size(gt_back,2)-cropSize,:);
+               gt_fore = gt_fore(cropSize:size(gt_fore,1)-cropSize,cropSize:size(gt_fore,2)-cropSize,:);
+           end
+
+            [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i), data);
 
             %option of getting overall metrics
             TP_global = TP_global + TP;
