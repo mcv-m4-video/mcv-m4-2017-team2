@@ -1,6 +1,7 @@
 %This function develops a grid search through block size and search area parameters
 %to obtain the best optical flow calculation performance with this naive
-%approach.
+%approach of block matching. This functions calls the block matching ones
+%from within so it's the only function to be manually launched.
 %Input parameters are:
 %   'seq_id'  =   the sequence which will be tested, between KITTI's
 %                 dataset sequences 45 and 157.
