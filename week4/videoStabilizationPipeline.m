@@ -6,7 +6,7 @@ function videoStabilizationPipeline
     addpath('../week2');
 
     %% load data
-    data = 'traffic_stabilized_target_tracking';  % 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
+    data = 'traffic';  % 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
     [start_img, range_images, dirInputs, dirGT] = load_data(data);
     input_files = list_files(dirInputs);
 
@@ -15,9 +15,9 @@ function videoStabilizationPipeline
 
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
-    look_best_alpha_rho = true;
+    look_best_alpha_rho = false;
     if look_best_alpha_rho
-        alpha_vect = 0:0.25:6;
+        alpha_vect = 1:0.25:5;
         rho_vect = 0.025:0.025:1;
         alpha_rho_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_vect);
     else
@@ -27,11 +27,12 @@ function videoStabilizationPipeline
             case 'fall'
                 rho = 0.05;  % Best results adaptive: Alpha = 3.25, Rho = 0.05, F1 = 0.70262
             case 'traffic'
-                rho = 0.15;  % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
+                rho = 0.225;  % Best results adaptive with morpho: Alpha = 2, Rho = 0.225, F1 = 0.8379, AUC = 0.63
             case 'traffic_stabilized_target_tracking'
-                rho = 0.8;
-        end
+                rho = 0.375;   % Best results adaptive with morpho: Alpha = 2.25, Rho = 0.375, F1 = 0.82869, AUC = 0.53
+    end
         alpha_vect = 0:0.25:6;
+        alpha_vect = [2];
         [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho);
     end
     
@@ -43,7 +44,7 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
 
     tic
 
-    plot_detection = false;
+    plot_detection = true;
     plot_graphs = true;
 
     precision = zeros(1,size(alpha_vect,2));
@@ -109,7 +110,14 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
                 fig = figure(10);
                 subplot(1,2,1); imshow(gt_fore); title('ground truth');
                 subplot(1,2,2); imshow(detection(:,:,i)); title('detection');
-                % pause();
+                % outfile = strcat('task_2_2_TrafficDetection.gif');
+                % fig_frame = getframe(fig);
+                % im = frame2im(fig_frame);
+                % if i == 1
+                %     imwrite(rgb2gray(im),outfile,'gif','LoopCount',Inf,'DelayTime',0.1);
+                % else
+                %     imwrite(rgb2gray(im),outfile,'gif','WriteMode','append','DelayTime',0.1);
+                % end
             end
 
             [TP, TN, FP, FN] = get_metrics_2val(gt_back, gt_fore, detection(:,:,i), data);
@@ -136,9 +144,6 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
             max_f1 = F1(n);
             max_alpha = alpha;
             max_rho = rho;
-            fprintf(['max f1 = \t', num2str(max_f1),'\n']);
-            fprintf(['max alpha = \t', num2str(max_alpha),'\n']);
-            fprintf(['max rho = \t', num2str(max_rho),'\n']);
         end
     end    
 
