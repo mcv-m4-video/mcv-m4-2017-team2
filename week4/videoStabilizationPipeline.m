@@ -1,17 +1,3 @@
-% [16:45, 1/27/2017] Gonzalo m2: Est?? dentro de alpha_sweep                        
-% [16:46, 1/27/2017]??Gonzalo m2:??La figure(3) que est?? comentada es la que grafica precisi??n vs recall                        
-% [16:47, 1/27/2017]??Laura P??rez Mayos:??perfecto! pues voy a montar en un archivo el pipeline entero: adaptive + fill holes + remove noise + morphological ops
-
-% morpho operator para traffic: opening+closening utilizando un SE de 'square' size 15
-
-% based on week2 > task2.m
-    % Week 2 task 2
-    % Task 2.1: Adaptive modelling
-    % Task 2.2: Comparison adaptive vs non
-            % Highway best results:     Alpha = 2.75, Rho = 0.2,  F1 = 0.72946
-            % Fall best results:        Alpha = 3.25, Rho = 0.05, F1 = 0.70262
-            % Traffic best results:     Alpha = 3.25, Rho = 0.15, F1 = 0.66755
-
 function videoStabilizationPipeline
     close all;
 
@@ -20,49 +6,44 @@ function videoStabilizationPipeline
     addpath('../week2');
 
     %% load data
-    % Datasets to use: 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
-    % Choose dataset images to work on from the above:
-    data = 'traffic_stabilized_target_tracking';
+    data = 'traffic_stabilized_target_tracking';  % 'highway', 'fall', 'traffic', 'traffic_stabilized_target_tracking'
     [start_img, range_images, dirInputs, dirGT] = load_data(data);
     input_files = list_files(dirInputs);
-
-    switch data
-        case 'highway'
-            % Best results adaptive: Alpha = 2.75, Rho = 0.2, F1 = 0.72946
-            rho_val = 0.2;
-        case 'fall'
-            % Best results adaptive: Alpha = 3.25, Rho = 0.05, F1 = 0.70262
-            rho_val = 0.05;
-        case 'traffic'
-            % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
-            rho_val = 0.15; 
-        case 'traffic_stabilized_target_tracking'
-            % Best results adaptive: Alpha = 8, Rho = 1, F1 = 0.83254
-            rho_val = 0.3; 
-    end
 
     background = 55;
     foreground = 255;
 
-%     alpha_vect = 0:0.25:8;
-%     rho_vect = 0.025:0.025:1;
-    alpha_vect = [8, 3.5];
-    rho_vect = 0:0.5:1.0;
-    
-
     [mu_matrix, sigma_matrix] = train_background(start_img, range_images, input_files, dirInputs);
 
-    % [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_val);
-    [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_rho_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_vect);
+    look_best_alpha_rho = true;
+    if look_best_alpha_rho
+        alpha_vect = 0:0.25:6;
+        rho_vect = 0.025:0.025:1;
+        alpha_rho_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_vect);
+    else
+        switch data
+            case 'highway'
+                rho = 0.2;  % Best results adaptive: Alpha = 2.75, Rho = 0.2, F1 = 0.72946
+            case 'fall'
+                rho = 0.05;  % Best results adaptive: Alpha = 3.25, Rho = 0.05, F1 = 0.70262
+            case 'traffic'
+                rho = 0.15;  % Best results adaptive: Alpha = 3.25, Rho = 0.15, F1 = 0.66755
+            case 'traffic_stabilized_target_tracking'
+                rho = 0.8;
+        end
+        alpha_vect = 0:0.25:6;
+        [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho);
+    end
+    
 end
 
 
-function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho)
-%function for sweeping through several thresholds to compare performance
+function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(data, alpha_vect, mu_matrix_original, sigma_matrix_original, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho)
+% sweep through several thresholds to compare performance
 
     tic
 
-    plot_detection = true;
+    plot_detection = false;
     plot_graphs = true;
 
     precision = zeros(1,size(alpha_vect,2));
@@ -74,8 +55,15 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
     FP_ = [];
     FN_ = [];
 
+    max_f1 = 0;
+    max_alpha = 0;
+    max_rho = 0;
+
     for n=1:size(alpha_vect,2)
         alpha = alpha_vect(n);
+
+        mu_matrix = mu_matrix_original;
+        sigma_matrix = sigma_matrix_original;
     
         %Metrics for alpha sweep
         TP_global = 0;
@@ -143,6 +131,15 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
         TN_(n) = TN_global;
         FP_(n) = FP_global;
         FN_(n) = FN_global;
+
+        if F1(n) > max_f1
+            max_f1 = F1(n);
+            max_alpha = alpha;
+            max_rho = rho;
+            fprintf(['max f1 = \t', num2str(max_f1),'\n']);
+            fprintf(['max alpha = \t', num2str(max_alpha),'\n']);
+            fprintf(['max rho = \t', num2str(max_rho),'\n']);
+        end
     end    
 
     time = toc;
@@ -176,21 +173,14 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_sweep(da
 end
 
 
-function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_rho_sweep(data, alpha_vect, mu_matrix, sigma_matrix, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_vect)
-%function for sweeping through several thresholds to compare performance
+function alpha_rho_sweep(data, alpha_vect, mu_matrix_original, sigma_matrix_original, range_images, start_img, dirInputs, input_files, background, foreground, dirGT, rho_vect)
+% sweeps through several thresholds to compare performance
 
-    tic
-
-    plot_detection = true;
+    plot_detection = false;
 
     precision = zeros(1,size(alpha_vect,2));
     recall = zeros(1,size(alpha_vect,2));
     F1 = zeros(1,size(alpha_vect,2));
-
-    TP_ = [];
-    TN_ = [];
-    FP_ = [];
-    FN_ = [];
 
     max_f1 = 0;
     max_alpha = 0;
@@ -201,8 +191,12 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_rho_swee
     for n=1:size(alpha_vect,2)
         alpha = alpha_vect(n);
         for rho = rho_vect
+            
             fprintf(['trying alpha = ', num2str(alpha), ' and rho = ', num2str(rho), '\n']);
             
+            mu_matrix = mu_matrix_original;
+            sigma_matrix = sigma_matrix_original;
+
             %Metrics for alpha sweep
             TP_global = 0;
             TN_global = 0;
@@ -265,10 +259,6 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_rho_swee
 
             %global metrics for threshold sweep:
             [precision(position), recall(position), F1(position)] = evaluation_metrics(TP_global,TN_global,FP_global,FN_global);
-            TP_(position) = TP_global;
-            TN_(position) = TN_global;
-            FP_(position) = FP_global;
-            FN_(position) = FN_global;
 
             if F1(position) > max_f1
                 max_f1 = F1(position);
@@ -281,11 +271,6 @@ function [time, AUC, TP_, TN_, FP_, FN_, precision, recall, F1] = alpha_rho_swee
             position = position+1;
         end
     end    
-
-    time = toc;
-
-    %AUC of Precision metrics
-    AUC = trapz(precision,2)/size(TP_,2);
 end
 
 
