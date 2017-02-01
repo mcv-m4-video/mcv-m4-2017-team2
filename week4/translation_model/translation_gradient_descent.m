@@ -1,4 +1,4 @@
-function p = translation_gradient_descent(I_curr, I_old, p0, dt, maxiter, delta, mask)
+function p = translation_gradient_descent(I_curr, I_old, p0, dt, maxiter, delta)
 
 fprintf('Computing global affine model by gradient descent...\n')
 
@@ -11,13 +11,14 @@ while(iterate)
     iter = iter + 1;
     
     % Compute gradient of error measure with parameters p:
-    gradient = compute_gradient_error(I_curr, I_old, pold, mask)';
+    gradient = compute_gradient_error(I_curr, I_old, pold)';
     
     % Update p:
     p = pold - dt * gradient;
     
     if(~rem(iter, 100))
-        err = translation_error(I_curr, I_old, p, mask);
+%         err = translation_error(I_curr, I_old, p, mask);
+        [err, ~] = translation_dfd2(I_old, I_curr, p);
         fprintf('Iteration %i.\n', iter)
         fprintf('p: %8.4f %8.4f\n', p)
         fprintf('delta = %10.6f\n', norm(p - pold) / sqrt(2))
@@ -39,7 +40,8 @@ while(iterate)
 end
 
 % Compute error with final parameters:
-err = translation_error(I_curr, I_old, p, mask);
+% err = translation_error(I_curr, I_old, p, mask);
+[err, ~] = translation_dfd2(I_old, I_curr, p);
 fprintf('Parameters found: %8.4f %8.4f\n', p)
 fprintf('Error: %10.6f\n\n', err)
 
@@ -49,7 +51,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function gradient = compute_gradient_error(I_curr, I_old, p, mask)
+function gradient = compute_gradient_error(I_curr, I_old, p)
     
     p1 = p;
     p2 = p;
@@ -61,9 +63,13 @@ function gradient = compute_gradient_error(I_curr, I_old, p, mask)
     p1(1) = p(1) + epsilon;
     p2(2) = p(2) + epsilon;
 
-    error0 = translation_error(I_curr, I_old, p, mask);
-    error1 = translation_error(I_curr, I_old, p1, mask);
-    error2 = translation_error(I_curr, I_old, p2, mask);
+%     error0 = translation_error(I_curr, I_old, p, mask);
+%     error1 = translation_error(I_curr, I_old, p1, mask);
+%     error2 = translation_error(I_curr, I_old, p2, mask);
+    
+    [error0, ~] = translation_dfd2(I_old, I_curr, p);
+    [error1, ~] = translation_dfd2(I_old, I_curr, p1);
+    [error2, ~] = translation_dfd2(I_old, I_curr, p2);
 
     gradient = zeros(2,1);
     gradient(1) = (error1 - error0) / epsilon;

@@ -6,6 +6,7 @@ addpath('../datasets');
 addpath('../utils');
 addpath('../week2');
 addpath('./translation_model');
+addpath('./affine_model');
 
 data = 'traffic';
 [T1, nframes, dirInputs] = load_data(data);
@@ -36,13 +37,19 @@ for i = 1:(nframes-1)
     
     [subr2, subr1] = meshgrid(1:(col2-col1+1), 1:(row2-row1+1));
     
-    p0 = [0 0];
-    dt = 0.1;
-    delta = 0.001;
+%     p0 = [0 0];
+%     dt = 0.1;
+%     delta = 0.000001;
+%     maxiter = 1000;
+%     p = translation_gradient_descent(sub_image2, sub_image1, p0, dt, maxiter, delta);
+%     [flow_estimation_y, flow_estimation_x] = translation_transform(subr1, subr2, p);
+    
+    p0 = [1 0 0 1 0 0];
+    dt = 0.01;
+    delta = 0.000001;
     maxiter = 1000;
-    mask = ones(size(subr1,1), size(subr1,2));
-    p = translation_gradient_descent(sub_image2, sub_image1, p0, dt, maxiter, delta, mask);
-    [flow_estimation_y, flow_estimation_x] = translation_transform(subr1, subr2, p);
+    p = affine_gradient_descent(sub_image2, sub_image1, p0, dt, maxiter, delta);
+    [flow_estimation_y, flow_estimation_x] = affine_transform(subr1, subr2, p);
     
     step = 10;
     r1_step = (row1:step:row2) - row1 + 1;

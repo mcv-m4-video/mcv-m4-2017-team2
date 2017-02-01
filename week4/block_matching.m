@@ -18,9 +18,9 @@ for i = 1:block_size:ni
         current_block = img1(i:i+block_size-1, j:j+block_size-1);
         %calculate the boundary constraints for the area of search
         begin_search_area_x = max(1, i-search_area);
-        end_search_area_x   = min(ni-block_size,i+block_size-1+search_area);
+        end_search_area_x   = min(ni-block_size,i+search_area);
         begin_search_area_y = max(1, j-search_area);
-        end_search_area_y   = min(nj-block_size,j+block_size-1+search_area);
+        end_search_area_y   = min(nj-block_size,j+search_area);
         
         %search the current block in the past img
         for step_x = begin_search_area_x:1:end_search_area_x

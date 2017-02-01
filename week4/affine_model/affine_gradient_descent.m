@@ -1,4 +1,4 @@
-function p = affine_gradient_descent(I_curr, I_old, p0, dt, maxiter, delta, mask)
+function p = affine_gradient_descent(I_curr, I_old, p0, dt, maxiter, delta)
 
 fprintf('Computing global affine model by gradient descent...\n')
 
@@ -11,13 +11,14 @@ while(iterate)
     iter = iter + 1;
     
     % Compute gradient of error measure with parameters p:
-    gradient = compute_gradient_error(I_curr, I_old, pold, mask);
+    gradient = compute_gradient_error(I_curr, I_old, pold)';
     
     % Update p:
     p = pold - dt * gradient;
     
-    if(~rem(iter, 10))
-        err = affine_error(I_curr, I_old, p, mask);
+    if(~rem(iter, 100))
+%         err = affine_error(I_curr, I_old, p, mask);
+        [err, ~] = affine_dfd2(I_old, I_curr, p);
         fprintf('Iteration %i.\n', iter)
         fprintf('p: %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f\n', p)
         fprintf('delta = %10.6f\n', norm(p - pold) / sqrt(6))
@@ -39,7 +40,8 @@ while(iterate)
 end
 
 % Compute error with final parameters:
-err = affine_error(I_curr, I_old, p, mask);
+% err = affine_error(I_curr, I_old, p);
+[err, ~] = affine_dfd2(I_old, I_curr, p);
 fprintf('Parameters found: %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f\n', p)
 fprintf('Error: %10.6f\n\n', err)
 
@@ -49,7 +51,7 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function gradient = compute_gradient_error(I_curr, I_old, p, mask)
+function gradient = compute_gradient_error(I_curr, I_old, p)
     
     p1 = p;
     p2 = p;
@@ -68,13 +70,21 @@ function gradient = compute_gradient_error(I_curr, I_old, p, mask)
     p5(5) = p(5) + epsilon;
     p6(6) = p(6) + epsilon;
 
-    error0 = affine_error(I_curr, I_old, p, mask);
-    error1 = affine_error(I_curr, I_old, p1, mask);
-    error2 = affine_error(I_curr, I_old, p2, mask);
-    error3 = affine_error(I_curr, I_old, p3, mask);
-    error4 = affine_error(I_curr, I_old, p4, mask);
-    error5 = affine_error(I_curr, I_old, p5, mask);
-    error6 = affine_error(I_curr, I_old, p6, mask);
+%     error0 = affine_error(I_curr, I_old, p);
+%     error1 = affine_error(I_curr, I_old, p1);
+%     error2 = affine_error(I_curr, I_old, p2);
+%     error3 = affine_error(I_curr, I_old, p3);
+%     error4 = affine_error(I_curr, I_old, p4);
+%     error5 = affine_error(I_curr, I_old, p5);
+%     error6 = affine_error(I_curr, I_old, p6);
+    
+    [error0, ~] = affine_dfd2(I_old, I_curr, p);
+    [error1, ~] = affine_dfd2(I_old, I_curr, p1);
+    [error2, ~] = affine_dfd2(I_old, I_curr, p2);
+    [error3, ~] = affine_dfd2(I_old, I_curr, p3);
+    [error4, ~] = affine_dfd2(I_old, I_curr, p4);
+    [error5, ~] = affine_dfd2(I_old, I_curr, p5);
+    [error6, ~] = affine_dfd2(I_old, I_curr, p6);
 
     gradient = zeros(6,1);
     gradient(1) = (error1 - error0) / epsilon;
