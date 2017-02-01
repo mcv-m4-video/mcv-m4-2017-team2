@@ -12,16 +12,18 @@ input_files = list_files(dirInputs);
 dirGT = strcat('../datasets/cdvd/dataset/cameraJitter/traffic/groundtruth/');
 
 block_size = 5;
-search_area = 14;
+search_area = 20;
 
 row1 = 150;
 row2 = 200;
 col1 = 40;
 col2 = 90;
 
-figure()
+fid = figure();
 flowx_old = 0;
 flowy_old = 0;
+
+gifname = 'task_2_1.gif';
 
 t = T1;
 % t=990;
@@ -44,8 +46,8 @@ for i = 1:(nframes-1)
     gradj2 = sub_image2 - image2(row1:row2,(col1:col2)-1);
     maggrad2 = sqrt(gradi2.^2 + gradj2.^2);
     
-    [flow_estimation_x, flow_estimation_y]  = block_matching(maggrad1, maggrad2, block_size, search_area);
-%     [flow_estimation_x, flow_estimation_y]  = block_matching(sub_image1, sub_image2, block_size, search_area);
+%     [flow_estimation_x, flow_estimation_y]  = block_matching(maggrad1, maggrad2, block_size, search_area);
+    [flow_estimation_x, flow_estimation_y]  = block_matching(sub_image1, sub_image2, block_size, search_area);
 %     [flow_estimation_x, flow_estimation_y]  = block_matching(image1, image2, block_size, search_area);
     
     flowx_flat = flow_estimation_x(:);
@@ -113,6 +115,15 @@ for i = 1:(nframes-1)
 %     image_trans = imtranslate(image2, [-flowx, -flowy]);
 %     imshow(image_trans)
 %     pause(0.1)
+
+    frame = getframe(fid);
+    im = frame2im(frame);
+    [imind,cm] = rgb2ind(im,256);
+    if i == 1;
+        imwrite(imind,cm,gifname,'gif', 'Loopcount',inf);
+    else
+        imwrite(imind,cm,gifname,'gif','WriteMode','append');
+    end
     
     flowx_old = flowx;
     flowy_old = flowy;
