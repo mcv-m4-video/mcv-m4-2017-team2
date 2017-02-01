@@ -38,8 +38,8 @@ firstTime = true;
 
 i = 1;
 j = 950;
-save_stabilized_images = true;
-save_stabilized_dual_images = false;
+save_stabilized_images = false;
+save_stabilized_dual_images = true;
 
 while ~isDone(hVideoSource)
     input = step(hVideoSource);

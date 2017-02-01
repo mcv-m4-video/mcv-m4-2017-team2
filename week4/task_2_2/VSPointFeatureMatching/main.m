@@ -53,7 +53,8 @@ function PointFeatureMatchingVideoStabilization(hVideoSrc)
         movMean = movMean + imgB;
 
         % Estimate transform from frame A to frame B, and fit as an s-R-t
-        H = cvexEstStabilizationTform2(imgA,imgB, 0.01);
+        % H = cvexEstStabilizationTform2(imgA,imgB, 0.01);
+        H = cvexEstStabilizationTform(imgA,imgB);
         HsRt = cvexTformToSRT(H);
         Hcumulative = HsRt * Hcumulative;
         imgBp = imwarp(imgB,affine2d(Hcumulative),'OutputView',imref2d(size(imgB)));

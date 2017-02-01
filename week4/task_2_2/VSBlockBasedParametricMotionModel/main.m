@@ -53,8 +53,8 @@ end
 %% into structure sequence
 %%
 sequence.MCpara.dThreshold = 1; % 4 for 'car', 1 for 'lamp' and 'kids', 8 for 'flower'
-sequence.MCpara.aThreshold = 4; % 3 for 'flower'
-sequence.MCpara.resetLength = 0;  % 12
+sequence.MCpara.aThreshold = 6; % 3 for 'flower'
+sequence.MCpara.resetLength = 1;  % 12
 sequence = motionCorrection(sequence);
 %filename = strcat(sequence.name,'File_step4');
 %save(filename,'sequence')
@@ -64,6 +64,7 @@ sequence = motionCorrection(sequence);
 %% Step V : Display original/stabilized video sequence
 %%
 % sequence.displayOption = 'color'; % by default it's b&w, i.e., the Y plane
+% M = sequenceDisplay(sequence);
 M = sequenceDisplay2(sequence);
 % movie(M,-1,12);  % forward and backward, 12 frames per second
 movie(M);

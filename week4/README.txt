@@ -46,3 +46,12 @@ Code:               week4 > task_2_2 > VSTargetTracking
 Dataset:            put your images in week4 > task_2_2 > VSTargetTracking > traffic.avi
 Execution:          execute videoStabilization.m
 Observations:       reads the video and generates two image sequences: the stabilized input and the stabilized ground truth.
+
+
+Video Stabilization pipeline
+----------------------------
+Allows to execute the foreground substraction using an adaptive model on any video sequence, computing all metrics and plotting all graphs and results if indicated by parameters plot_detection and plot_graphs.
+
+Code: week4 > videoStabilizationPipeline.m
+Execution: execute function alpha_sweep to plot precission recall curves sweeping over alpha values; execute alpha_rho_sweep to compute best alpha and rho (see main funciton of file).
+
