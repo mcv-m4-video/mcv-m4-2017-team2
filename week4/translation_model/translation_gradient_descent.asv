@@ -11,7 +11,11 @@ while(iterate)
     iter = iter + 1;
     
     % Compute gradient of error measure with parameters p:
-    gradient = compute_gradient_error(I_curr, I_old, pold, mask)';
+    gradient = compute_gradient_error(I_curr, I_old, pold, mask);
+    
+    size(pold)
+    size(dt)
+    size(gradient
     
     % Update p:
     p = pold - dt * gradient;

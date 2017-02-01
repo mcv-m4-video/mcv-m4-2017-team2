@@ -31,14 +31,23 @@ for i = 1:(nframes-1)
     
     sub_image1 = image1(row1:row2,col1:col2);
     sub_image2 = image2(row1:row2,col1:col2);
-%     [flow_estimation_x, flow_estimation_y]  = block_matching(sub_image1, sub_image2, block_size, search_area);
-    [flow_estimation_x, flow_estimation_y]  = block_matching(image1, image2, block_size, search_area);
+    
+    subr1 = 1:(row2-row1+1);
+    subr2 = 1:(col2-col1+1);
+    
+    p0 = [0 0];
+    dt = 0.01;
+    delta = 0.001;
+    maxiter = 1000;
+    mask = ones(size(image2,1), size(image2,2));
+    p = translation_gradient_descent(sub_image2, sub_image1, p0, dt, maxiter, delta, mask);
+    [flow_estimation_y, flow_estimation_x] = translation_transform(subr1, subr2, p);
     
     step = 5;
-%     r1_step = (row1:step:row2) - row1 + 1;
-%     r2_step = (col1:step:col2) - col1 + 1;
-    r1_step = (row1:step:row2);
-    r2_step = (col1:step:col2);
+    r1_step = (row1:step:row2) - row1 + 1;
+    r2_step = (col1:step:col2) - col1 + 1;
+%     r1_step = (row1:step:row2);
+%     r2_step = (col1:step:col2);
     flowx_step = flow_estimation_x(r1_step, r2_step);
     flowy_step = flow_estimation_y(r1_step, r2_step);
     
