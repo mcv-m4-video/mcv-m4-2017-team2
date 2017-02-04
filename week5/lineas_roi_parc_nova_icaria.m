@@ -46,6 +46,7 @@ mask(:,:,1) = mask_izq .* mask_der .* mask_sup;
 mask(:,:,2) = mask(:,:,1);
 mask(:,:,3) = mask(:,:,1);
 % imshow(mask)
+imwrite(mask, 'mask_roi_parc_nova_icaria.png')
 
 % Figura:
 figure()
