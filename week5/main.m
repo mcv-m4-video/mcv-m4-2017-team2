@@ -24,9 +24,9 @@ switch method
                                     LearningRate, MinimumBackgroundRatio);
     case 'adaptive'
         inputFiles = list_files(dirInputs);        
-        [mu_matrix, sigma_matrix] = train_background(T1, nframes, inputFiles, dirInputs);
+        [mu_matrix, sigma_matrix] = train_background_short(T1, nframes, inputFiles, dirInputs);
         alpha = 1.75;  % best value with traffic stabilized
-        rho = 0.375;  % best value with traffic stabilized
+        rho = 0.075;  % best value with traffic stabilized
         background = 55;
         foreground = 255;
         createAnimatedGif = false;

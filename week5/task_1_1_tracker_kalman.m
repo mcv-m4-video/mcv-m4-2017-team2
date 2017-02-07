@@ -97,7 +97,7 @@ end
         % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
         %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
         obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-            'NumTrainingFrames', 100, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.9);
+            'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
 %         obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
 %             'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
         
@@ -183,6 +183,13 @@ end
 % %         mask = imopen(mask, strel('square', 10));
         mask = imclose(mask, strel('square', 10));
         mask = imfill(mask, 4, 'holes');
+        
+        mask1 = double(mask);
+        index1 = round(size(mask1,1)/3);
+        
+        mask1(index1:end,:) = bwareaopen(mask1(index1:end,:), 200);
+        
+        mask=logical(mask1);
         
         % Apply morphological operations to remove noise and fill in holes.
 %         mask = imopen(mask, strel('rectangle', [3,3]));

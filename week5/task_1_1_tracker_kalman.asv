@@ -80,7 +80,7 @@ end
         
         % Create a video file reader.
         % obj.reader = vision.VideoFileReader('atrium.avi');
-        obj.reader = vision.VideoFileReader('parc_nova_icaria.mp4');  % lpmayos
+        obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
         
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
@@ -98,6 +98,8 @@ end
         %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
         obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
             'NumTrainingFrames', 100, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.9);
+%         obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
+%             'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
         
         % Connected groups of foreground pixels are likely to correspond to moving
         % objects.  The blob analysis system object is used to find such groups
@@ -107,6 +109,7 @@ end
         obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
             'AreaOutputPort', true, 'CentroidOutputPort', true, ...
             'MinimumBlobArea', 200);
+%             'MinimumBlobArea', 300);
     end
 
 %% Initialize Tracks
@@ -175,11 +178,18 @@ end
         mask = obj.detector.step(frame);
 
         % % lpmayos: last week we applied this operators
-        mask = imopen(mask, strel('square', 3));
+        mask = imopen(mask, strel('disk', 3));
         mask = imfill(mask, 4, 'holes');
 % %         mask = imopen(mask, strel('square', 10));
-        mask = imclose(mask, strel('square', 10));
+        mask = imclose(mask, strel('disk', 10));
         mask = imfill(mask, 4, 'holes');
+        
+        mask1 = double(mask);
+        index1 = round(size(1,mask1)/3);
+        
+        mask1(index1:end,:) = bwareaopen(mask1(index1:end,:), 100);
+        
+        mask=logical(mask1);
         
         % Apply morphological operations to remove noise and fill in holes.
 %         mask = imopen(mask, strel('rectangle', [3,3]));
@@ -321,8 +331,10 @@ end
         
 %         invisibleForTooLong = 20;
 %         ageThreshold = 8;
+%         visibilityThreshold = 0.6;
         invisibleForTooLong = 5;
         ageThreshold = 4;
+        visibilityThreshold = 0.6;
         
         % Compute the fraction of the track's age for which it was visible.
         ages = [tracks(:).age];
@@ -330,7 +342,7 @@ end
         visibility = totalVisibleCounts ./ ages;
         
         % Find the indices of 'lost' tracks.
-        lostInds = (ages < ageThreshold & visibility < 0.6) | ...
+        lostInds = (ages < ageThreshold & visibility < visibilityThreshold) | ...
             [tracks(:).consecutiveInvisibleCount] >= invisibleForTooLong;
         
         % Delete lost tracks.

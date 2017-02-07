@@ -34,7 +34,7 @@ function detection = detectionPipeline_adaptive(dirSequence, T1, T2, mu_matrix, 
         aux_b = detection(:,:,i);
         
         % ??
-        detection(:,:,i) = bwareaopen(detection(:,:,i), 500);
+        detection(:,:,i) = bwareaopen(detection(:,:,i), 30);
         aux_c = detection(:,:,i);
 
         % Morphological operators:
