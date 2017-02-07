@@ -16,6 +16,11 @@ elseif(strcmp(videoname, 'traffic'))
     T1 = 950;
     T2 = 1050;
     dirinput = '../datasets/cdvd/dataset/cameraJitter/traffic/input/';
+
+elseif(strcmp(videoname,'parc_nova_icaria'))
+    T1 = 1174;
+    T2 = 2004;
+    dirinput = 'sequence_parc_nova_icaria/';
     
 else
     error('Sequence not recognized.')
