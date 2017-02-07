@@ -13,7 +13,7 @@ function detection = detectionPipeline(grayframe, mu_matrix, sigma_matrix)
     detection = imfill(detection, connectivity);
     
     % ??
-    detection = bwareaopen(detection, 500);
+    detection = bwareaopen(detection, 25);
     
     % Morphological operators:
     detection = imopen(detection, se);

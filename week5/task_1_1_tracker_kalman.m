@@ -80,7 +80,7 @@ end
         
         % Create a video file reader.
         % obj.reader = vision.VideoFileReader('atrium.avi');
-        obj.reader = vision.VideoFileReader('parc_nova_icaria.mp4');  % lpmayos
+        obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
         
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
@@ -96,8 +96,8 @@ end
         % lpmayos: added params from last week
         % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
         %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
-        obj.detector = vision.ForegroundDetector('NumGaussians', 5, ...
-            'NumTrainingFrames', 100, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.4);
+        obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
+            'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
         
         % Connected groups of foreground pixels are likely to correspond to moving
         % objects.  The blob analysis system object is used to find such groups
@@ -106,7 +106,7 @@ end
         
         obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
             'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-            'MinimumBlobArea', 400);
+            'MinimumBlobArea', 300);
     end
 
 %% Initialize Tracks
