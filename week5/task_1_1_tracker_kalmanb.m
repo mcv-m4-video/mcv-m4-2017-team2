@@ -16,11 +16,44 @@ while ~isDone(obj.reader)
     predictNewLocationsOfTracks();
     [assignments, unassignedTracks, unassignedDetections] = ...
         detectionToTrackAssignment();
-    
+
     updateAssignedTracks();
     updateUnassignedTracks();
     deleteLostTracks();
     createNewTracks();
+    
+    if ~isempty(bboxes)
+               labels = {};
+        for j = 1:size(bboxes,1)
+            if (isempty(tracks(j).fst_check))
+                vel = 'Unknown';
+            else
+                realx = [tracks(j).centroid(1) tracks(j).oldCentroid(1)];
+                realy = [tracks(j).centroid(2) tracks(j).oldCentroid(2)];
+                [homx,homy] = transformPointsForward(params.H, realx, realy);
+                dist = sqrt( (homx(1)-homx(2))^2 + (homy(2)-homy(1))^2 );
+                distreal = (dist*params.est2real) / params.est;
+                vel = ((distreal*params.vel*3.6)+vel)/2;
+                
+            end
+            if (mod(v.FrameCount,5)==0)
+                     
+                text = strcat('Id:',num2str(tracks(j).id),' Vel:',num2str(mean([vel tracks(j).vel])) );
+                labels{j} = text;
+                tracks(j).vel = vel;
+            else
+                if isempty(text)
+                    labels{j}='';
+                else
+                    labels{j} = text;
+                end
+
+                
+            end
+            
+        end
+        rgbFrame = insertObjectAnnotation(rgbFrame, 'rectangle',bboxes, labels); 
+    end    
     
     displayTrackingResults();
 end
@@ -32,24 +65,12 @@ end
 
     function obj = setupSystemObjects()
         % Initialize Video I/O
-        % Create objects for reading a video from a file, drawing the tracked
-        % objects in each frame, and playing the video.
-        
         % Create a video file reader.
         obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
-        
-        % Create two video players, one to display the video,
-        % and one to display the foreground mask.
         obj.videoPlayer = vision.VideoPlayer('Position', [20, 200, 700, 400]);
         obj.maskPlayer = vision.VideoPlayer('Position', [740, 200, 700, 400]);
         
-        % Create system objects for foreground detection and blob analysis
-        
-        % The foreground detector is used to segment moving objects from
-        % the background. It outputs a binary mask, where the pixel value
-        % of 1 corresponds to the foreground and the value of 0 corresponds
-        % to the background. 
-       obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
+        obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
             'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
        
         obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
@@ -69,9 +90,9 @@ end
             'age', {}, ...
             'totalVisibleCount', {}, ...
             'consecutiveInvisibleCount', {},...
-            'centroid', {}, ...
-            'vel', {}, ...
-            'oldCentroid', {});
+            'fst_check', {}, ...
+            'snd_check', {}, ...
+            'trd_check', {});
     end
 
 %% Read a Video Frame
@@ -112,6 +133,7 @@ end
 
         % Perform blob analysis to find connected components.
         [~, centroids, bboxes] = obj.blobAnalyser.step(mask);
+        
     end
 
 %% Predict New Locations of Existing Tracks
@@ -160,7 +182,7 @@ end
             trackIdx = assignments(i, 1);
             detectionIdx = assignments(i, 2);
             
-            tracks(trackIdx).oldCentroid = tracks(trackIdx).centroid ;
+            %tracks(trackIdx).oldCentroid = tracks(trackIdx).centroid ;
             
             centroid = centroids(detectionIdx, :);
             bbox = bboxes(detectionIdx, :);
@@ -251,9 +273,9 @@ end
                 'age', 1, ...
                 'totalVisibleCount', 1, ...
                 'consecutiveInvisibleCount', 0,...
-                'centroid', centroid, ...
-                'vel', 0, ...
-                'oldCentroid', []);
+                'fst_check', 0, ...
+                'snd_check', 0, ...
+                'trd_check', 0);
 
             % Add it to the array of tracks.
             tracks(end + 1) = newTrack;
