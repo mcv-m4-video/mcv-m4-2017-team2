@@ -46,8 +46,7 @@ function task_1_1_tracker_kalman()
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
-video = 'highway';
-obj = setupSystemObjects(video);
+obj = setupSystemObjects();
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
@@ -57,7 +56,7 @@ vehicle_counter = 0;
 frame_count = 0;
 first_landmark = 116;
 second_landmark = 386;
-fps = 30;
+fps = 29;
 speedlimit = 80;
 % <<<<<<
 
@@ -68,7 +67,7 @@ while ~isDone(obj.reader)
     frame_count = frame_count + 1; % xian
     
     frame = readFrame();
-    [centroids, bboxes, mask] = detectObjects(frame, obj.roi);
+    [centroids, bboxes, mask] = detectObjects(frame);
     predictNewLocationsOfTracks();
     [assignments, unassignedTracks, unassignedDetections] = ...
         detectionToTrackAssignment();
@@ -87,113 +86,39 @@ end
 % Create System objects used for reading the video frames, detecting
 % foreground objects, and displaying results.
 
-    function obj = setupSystemObjects(video)
+    function obj = setupSystemObjects()
         % Initialize Video I/O
         % Create objects for reading a video from a file, drawing the tracked
         % objects in each frame, and playing the video.
         
-        switch video
-            case 'icaria'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-                %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-                    % 'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-                    % 'MinimumBlobArea', 300);
-
-                roi = imread('mask_roi_parc_nova_icaria2.png');
-                obj.roi = double(roi(:,:,1) > 0.5);
-
-            case 'highway'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('highway.avi');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-
-                roi = imread('mask_roi_highway.jpg');
-                obj.roi = double(roi(:,:,1) > 0.5);
-
-            case 'traffic'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('traffic.avi');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-
-                roi = imread('mask_roi_traffic.jpg');
-                obj.roi = double(roi(:,:,1) > 0.5);
-        end
+        % Create a video file reader.
+        % obj.reader = vision.VideoFileReader('atrium.avi');
+        obj.reader = vision.VideoFileReader('traffic.avi');  % lpmayos
+        
+        % Create two video players, one to display the video,
+        % and one to display the foreground mask.
+        obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
+        obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
+        
+        % Create system objects for foreground detection and blob analysis
+        
+        % The foreground detector is used to segment moving objects from
+        % the background. It outputs a binary mask, where the pixel value
+        % of 1 corresponds to the foreground and the value of 0 corresponds
+        % to the background. 
+        % lpmayos: added params from last week
+        obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
+            'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
+ 
+        % Connected groups of foreground pixels are likely to correspond to moving
+        % objects.  The blob analysis system object is used to find such groups
+        % (called 'blobs' or 'connected components'), and compute their
+        % characteristics, such as area, centroid, and the bounding box.
+        
+        obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
+            'AreaOutputPort', true, 'CentroidOutputPort', true, ...
+            'MinimumBlobArea', 200);
+%             'MinimumBlobArea', 300);
     end
 
 %% Initialize Tracks
@@ -259,7 +184,7 @@ end
 % It then performs morphological operations on the resulting binary mask to
 % remove noisy pixels and to fill the holes in the remaining blobs.  
 
-    function [centroids, bboxes, mask] = detectObjects(frame, roi)
+    function [centroids, bboxes, mask] = detectObjects(frame)
         
         % Detect foreground.
         mask = obj.detector.step(frame);
@@ -285,6 +210,8 @@ end
 %         mask = imfill(mask, 'holes');
 
         % lpmayos: Leave out all the detections outside the Region Of Interest:
+        roi = imread('mask_roi_parc_nova_icaria2.png');
+        roi = double(roi(:,:,1) > 0.5);
         mask = logical(mask .* roi);
 
         % Perform blob analysis to find connected components.
@@ -589,10 +516,8 @@ end
 %                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
 %                     end
                     if(reliableTracks(i).speed ~= -1)
-%                     labels{i} = [labels{i}, ' - ', ...
-%                                     num2str(round(reliableTracks(i).speed,2)), ' km/h'];
                     labels{i} = [labels{i}, ' - ', ...
-                                    num2str(round(reliableTracks(i).speed)), ' km/h'];
+                                    num2str(round(reliableTracks(i).speed,2)), ' km/h'];
                     end
                 end
                 % <<<<<<
