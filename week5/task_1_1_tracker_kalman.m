@@ -50,6 +50,7 @@ first_landmark = -1;
 second_landmark = -1;
 fps = -1;
 speedlimit = -1;
+dist = -1;
 invisibleForTooLong = -1;
 ageThreshold = -1;
 visibilityThreshold = -1;
@@ -115,6 +116,7 @@ end
                 second_landmark = 386;
                 fps = 30;
                 speedlimit = 80;
+                dist = 24;
                 % Options for deleting lost tracks:
                 invisibleForTooLong = 5;
                 ageThreshold = 4;
@@ -155,10 +157,11 @@ end
                 % Name of the mask file (for the region of interest):
                 roiname = 'mask_roi_traffic_stabilized.jpg';
                 % Other parameters:
-                first_landmark = 116;
-                second_landmark = 386;
+                first_landmark = 125;
+                second_landmark = 48;
                 fps = 30;
                 speedlimit = 80;
+                dist = 7;
                 % Options for deleting lost tracks:
                 invisibleForTooLong = 2;
                 ageThreshold = 4;
@@ -486,8 +489,8 @@ end
             % Compute velocity:
             if(tracks(i).time_first_mark ~= -1 && tracks(i).time_second_mark ~= -1 && ...
                     tracks(i).speed == -1)
-                tracks(i).speed = fps / (tracks(i).time_second_mark - tracks(i).time_first_mark) ...
-                                * 24 * 3.6;
+                tracks(i).speed = fps / abs(tracks(i).time_second_mark - tracks(i).time_first_mark) ...
+                                * dist * 3.6;
             end
         end
     end
@@ -573,7 +576,7 @@ end
                 % Add the speed to the label:
                 for i = 1:length(reliableTracks)
                     if(reliableTracks(i).speed ~= -1)
-                        labels{i} = [labels{i}, ' - ', ...
+                        labels{i} = [labels{i}, ' vel: ', ...
                                         num2str(round(reliableTracks(i).speed)), ' km/h'];
                     end
                 end
