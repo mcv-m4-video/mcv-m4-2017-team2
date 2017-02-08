@@ -56,7 +56,7 @@ vehicle_counter = 0;
 frame_count = 0;
 first_landmark = 116;
 second_landmark = 386;
-fps = 30;
+fps = 29;
 speedlimit = 80;
 % <<<<<<
 
@@ -93,7 +93,7 @@ end
         
         % Create a video file reader.
         % obj.reader = vision.VideoFileReader('atrium.avi');
-        obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
+        obj.reader = vision.VideoFileReader('traffic.avi');  % lpmayos
         
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
@@ -107,13 +107,9 @@ end
         % of 1 corresponds to the foreground and the value of 0 corresponds
         % to the background. 
         % lpmayos: added params from last week
-        % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-        %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
         obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
             'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-%         obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-%             'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
-        
+ 
         % Connected groups of foreground pixels are likely to correspond to moving
         % objects.  The blob analysis system object is used to find such groups
         % (called 'blobs' or 'connected components'), and compute their
