@@ -50,13 +50,21 @@ obj = setupSystemObjects();
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
-set_reliable_tracks = []; % xian
-vehicle_counter = 0; % xian
+% >>>>>> xian
+set_reliable_tracks = [];
+vehicle_counter = 0;
+frame_count = 0;
+first_landmark = 137;
+second_landmark = 405;
+fps = 30;
+% <<<<<<
 
 nextId = 1; % ID of the next track
 
 % Detect moving objects, and track them across video frames.
 while ~isDone(obj.reader)
+    frame_count = frame_count + 1; % xian
+    
     frame = readFrame();
     [centroids, bboxes, mask] = detectObjects(frame);
     predictNewLocationsOfTracks();
@@ -67,6 +75,7 @@ while ~isDone(obj.reader)
     updateUnassignedTracks();
     deleteLostTracks();
     createNewTracks();
+    computeVelocities();
     
     displayTrackingResults();
 end
@@ -87,8 +96,8 @@ end
         
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
-        obj.videoPlayer = vision.VideoPlayer('Position', [20, 200, 700, 400]);
-        obj.maskPlayer = vision.VideoPlayer('Position', [740, 200, 700, 400]);
+        obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
+        obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
         
         % Create system objects for foreground detection and blob analysis
         
@@ -156,7 +165,10 @@ end
             'kalmanFilter', {}, ...
             'age', {}, ...
             'totalVisibleCount', {}, ...
-            'consecutiveInvisibleCount', {});
+            'consecutiveInvisibleCount', {}, ...
+            'time_first_mark', -1, ... % xian
+            'time_second_mark', -1, ... % xian
+            'speed', -1); % xian
     end
 
 %% Read a Video Frame
@@ -377,13 +389,49 @@ end
                 'kalmanFilter', kalmanFilter, ...
                 'age', 1, ...
                 'totalVisibleCount', 1, ...
-                'consecutiveInvisibleCount', 0);
+                'consecutiveInvisibleCount', 0, ...
+                'time_first_mark', -1, ... % xian
+                'time_second_mark', -1, ... % xian
+                'speed', -1); % xian
             
             % Add it to the array of tracks.
             tracks(end + 1) = newTrack;
             
             % Increment the next id.
             nextId = nextId + 1;
+        end
+    end
+
+%% Compute velocities
+% We will annotate when a track reaches the first landmark, then when it
+% reaches the second one, and with this two data we will compute a speed.
+% xian
+
+    function computeVelocities()
+        if isempty(tracks)
+            return;
+        end
+        
+        for i = 1:length(tracks)
+            bottom_row = tracks(i).bbox(2) + tracks(i).bbox(4);
+            % Check first landmark:
+            if(bottom_row >= first_landmark && tracks(i).time_first_mark == -1)
+                % If the track appears after the first landmark, we do not
+                % take this track into account.
+                if(bottom_row <= first_landmark + 20)
+                    tracks(i).time_first_mark = frame_count;
+                end
+            end
+            % Check second landmark:
+            if(bottom_row >= second_landmark && tracks(i).time_second_mark == -1)
+                tracks(i).time_second_mark = frame_count;
+            end
+            % Compute velocity:
+            if(tracks(i).time_first_mark ~= -1 && tracks(i).time_second_mark ~= -1 && ...
+                    tracks(i).speed == -1)
+                tracks(i).speed = fps / (tracks(i).time_second_mark - tracks(i).time_first_mark) ...
+                                * 50 * 3.6;
+            end
         end
     end
 
@@ -455,15 +503,37 @@ end
                 % location.
 %                 labels = cellstr(int2str(ids'));
                 labels = cellstr(int2str(new_ids')); % xian
-                predictedTrackInds = ...
-                    [reliableTracks(:).consecutiveInvisibleCount] > 0;
-                isPredicted = cell(size(labels));
-                isPredicted(predictedTrackInds) = {' predicted'};
-                labels = strcat(labels, isPredicted);
+%                 predictedTrackInds = ...
+%                     [reliableTracks(:).consecutiveInvisibleCount] > 0;
+%                 isPredicted = cell(size(labels));
+%                 isPredicted(predictedTrackInds) = {' predicted'};
+%                 labels = strcat(labels, isPredicted);
+                % >>>>>> xian
+                % Add the speed to the label:
+                for i = 1:length(reliableTracks)
+%                     if(reliableTracks(i).speed ~= -1)
+%                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
+%                     end
+                    if(reliableTracks(i).speed ~= -1)
+                    labels{i} = strcat(labels{i}, ' - ', ...
+                                    num2str(round(reliableTracks(i).speed,2)), ' km/h');
+                    end
+                end
+                % <<<<<<
                 
                 % Draw the objects on the frame.
                 frame = insertObjectAnnotation(frame, 'rectangle', ...
                     bboxes, labels);
+                
+                % Insert speeds at top left corner:
+                y = 1;
+                w_box = 100;
+                for i = 1:length(labels)
+                    frame = insertObjectAnnotation(frame, 'rectangle', ...
+                        [1, y, w_box, 1], labels{i}, ...
+                        'TextBoxOpacity', 0.9, 'FontSize', 12);
+                    y = y + 50;
+                end
                 
                 % Draw the objects on the mask.
                 mask = insertObjectAnnotation(mask, 'rectangle', ...
