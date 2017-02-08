@@ -42,11 +42,17 @@
 % <matlab:helpview(fullfile(docroot,'toolbox','matlab','matlab_prog','matlab_prog.map'),'nested_functions') nested functions> 
 % below.
 
-function task_1_1_tracker_kalman()
+function task_1_1_tracker_kalman(video)
+% video can be either 'icaria', 'highway' or 'traffic'.
+
+% Initialize this variables to give them a global scope:
+first_landmark = -1;
+second_landmark = -1;
+fps = -1;
+speedlimit = -1;
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
-video = 'highway';
 obj = setupSystemObjects(video);
 
 tracks = initializeTracks(); % Create an empty array of tracks.
@@ -55,10 +61,6 @@ tracks = initializeTracks(); % Create an empty array of tracks.
 set_reliable_tracks = [];
 vehicle_counter = 0;
 frame_count = 0;
-first_landmark = 116;
-second_landmark = 386;
-fps = 30;
-speedlimit = 80;
 % <<<<<<
 
 nextId = 1; % ID of the next track
@@ -94,106 +96,90 @@ end
         
         switch video
             case 'icaria'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-                %     'NumTrainingFrames', 40, 'MinimumBackgroundRatio', 0.7);
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                % obj.detector = vision.ForegroundDetector('NumGaussians', 3, ...
-                    % 'NumTrainingFrames', 20, 'LearningRate', 0.0109, 'MinimumBackgroundRatio', 0.3);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-                    % 'MinimumBlobArea', 300);
-
-                roi = imread('mask_roi_parc_nova_icaria2.png');
-                obj.roi = double(roi(:,:,1) > 0.5);
+                % Stauffer & Grimson options:
+                NumGaussians           = 2;
+                NumTrainingFrames      = 25;
+                LearningRate           = 0.0025;
+                MinimumBackgroundRatio = 0.9;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'parc_nova_icaria2.mp4';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_parc_nova_icaria2.png';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 80;
 
             case 'highway'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('highway.avi');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-
-                roi = imread('mask_roi_highway.jpg');
-                obj.roi = double(roi(:,:,1) > 0.5);
+                % Stauffer & Grimson options:
+                NumGaussians           = 2;
+                NumTrainingFrames      = 25;
+                LearningRate           = 0.0025;
+                MinimumBackgroundRatio = 0.9;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'highway.avi';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_highway.jpg';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 120;
 
             case 'traffic'
-                % Create a video file reader.
-                % obj.reader = vision.VideoFileReader('atrium.avi');
-                obj.reader = vision.VideoFileReader('traffic.avi');  % lpmayos
-                
-                % Create two video players, one to display the video,
-                % and one to display the foreground mask.
-                obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
-                obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-                
-                % Create system objects for foreground detection and blob analysis
-                
-                % The foreground detector is used to segment moving objects from
-                % the background. It outputs a binary mask, where the pixel value
-                % of 1 corresponds to the foreground and the value of 0 corresponds
-                % to the background. 
-                % lpmayos: added params from last week
-                obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-                    'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-                
-                % Connected groups of foreground pixels are likely to correspond to moving
-                % objects.  The blob analysis system object is used to find such groups
-                % (called 'blobs' or 'connected components'), and compute their
-                % characteristics, such as area, centroid, and the bounding box.
-                
-                obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
-                    'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-                    'MinimumBlobArea', 200);
-
-                roi = imread('mask_roi_traffic.jpg');
-                obj.roi = double(roi(:,:,1) > 0.5);
+                % Stauffer & Grimson options:
+                NumGaussians           = 2;
+                NumTrainingFrames      = 25;
+                LearningRate           = 0.0025;
+                MinimumBackgroundRatio = 0.9;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'traffic.avi';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_traffic.jpg';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 80;
         end
+        
+        % Create a video file reader.
+        obj.reader = vision.VideoFileReader(videoname);  % lpmayos
+
+        % Create two video players, one to display the video,
+        % and one to display the foreground mask.
+        obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
+        obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
+
+        % Create system objects for foreground detection and blob analysis
+
+        % The foreground detector is used to segment moving objects from
+        % the background. It outputs a binary mask, where the pixel value
+        % of 1 corresponds to the foreground and the value of 0 corresponds
+        % to the background. 
+        % lpmayos: added params from last week
+        obj.detector = vision.ForegroundDetector('NumGaussians', NumGaussians, ...
+            'NumTrainingFrames', NumTrainingFrames, 'LearningRate', ...
+            LearningRate, 'MinimumBackgroundRatio', MinimumBackgroundRatio);
+
+        % Connected groups of foreground pixels are likely to correspond to moving
+        % objects.  The blob analysis system object is used to find such groups
+        % (called 'blobs' or 'connected components'), and compute their
+        % characteristics, such as area, centroid, and the bounding box.
+
+        obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
+            'AreaOutputPort', true, 'CentroidOutputPort', true, ...
+            'MinimumBlobArea', MinimumBlobArea);
+
+        roi = imread(roiname);
+        obj.roi = double(roi(:,:,1) > 0.5);
     end
 
 %% Initialize Tracks
@@ -585,14 +571,9 @@ end
                 % >>>>>> xian
                 % Add the speed to the label:
                 for i = 1:length(reliableTracks)
-%                     if(reliableTracks(i).speed ~= -1)
-%                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
-%                     end
                     if(reliableTracks(i).speed ~= -1)
-%                     labels{i} = [labels{i}, ' - ', ...
-%                                     num2str(round(reliableTracks(i).speed,2)), ' km/h'];
-                    labels{i} = [labels{i}, ' - ', ...
-                                    num2str(round(reliableTracks(i).speed)), ' km/h'];
+                        labels{i} = [labels{i}, ' - ', ...
+                                        num2str(round(reliableTracks(i).speed)), ' km/h'];
                     end
                 end
                 % <<<<<<
@@ -627,7 +608,7 @@ end
         obj.videoPlayer.step(frame);
         
         % Show total number of cars found:
-        fprintf('Vehicle counter: %i.\n', vehicle_counter)
+%         fprintf('Vehicle counter: %i.\n', vehicle_counter)
     end
 
 %% Summary
