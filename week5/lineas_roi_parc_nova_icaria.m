@@ -46,16 +46,17 @@ mask(:,:,1) = mask_izq .* mask_der .* mask_sup;
 mask(:,:,2) = mask(:,:,1);
 mask(:,:,3) = mask(:,:,1);
 % imshow(mask)
-imwrite(mask, 'mask_roi_parc_nova_icaria.png')
+% imwrite(mask, 'mask_roi_parc_nova_icaria.png')
 
 % Figura:
 figure()
-imshow(frame .* mask)
+% imshow(frame .* mask)
+imshow(frame)
 hold on
-plot([0, 300], [230, 0], 'r')
-plot([640, 315], [365, 0], 'r')
-plot([0, 640], [50, 50], 'r')
-plot([0, 640], [88, 88], 'y')
+% plot([0, 300], [230, 0], 'r')
+% plot([640, 315], [365, 0], 'r')
+% plot([0, 640], [50, 50], 'r')
+% plot([0, 640], [88, 88], 'y')
 plot([0, 640], [137, 137], 'y')
 plot([0, 640], [405, 405], 'y')
 

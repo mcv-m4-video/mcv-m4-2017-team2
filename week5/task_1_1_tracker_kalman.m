@@ -54,8 +54,8 @@ tracks = initializeTracks(); % Create an empty array of tracks.
 set_reliable_tracks = [];
 vehicle_counter = 0;
 frame_count = 0;
-first_landmark = 137;
-second_landmark = 405;
+first_landmark = 116;
+second_landmark = 386;
 fps = 30;
 speedlimit = 80;
 % <<<<<<
@@ -444,6 +444,10 @@ end
     function displayTrackingResults()
         % Convert the frame and the mask to uint8 RGB.
         frame = im2uint8(frame);
+        
+        frame(first_landmark,:,:) = 0;
+        frame(second_landmark,:,:) = 0;
+        
         mask = uint8(repmat(mask, [1, 1, 3])) .* 255;
         
         minVisibleCount = 8;
