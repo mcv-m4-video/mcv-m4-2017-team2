@@ -1,5 +1,5 @@
 
-function task_1_1_tracker_kalmanb()
+function task_1_1_tracker_kalman()
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
@@ -7,10 +7,22 @@ obj = setupSystemObjects();
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
+% >>>>>> xian
+set_reliable_tracks = [];
+vehicle_counter = 0;
+frame_count = 0;
+first_landmark = 137;
+second_landmark = 405;
+third_landmark = 
+fps = 30;
+% <<<<<<
+
 nextId = 1; % ID of the next track
 
 % Detect moving objects, and track them across video frames.
 while ~isDone(obj.reader)
+    frame_count = frame_count + 1; % xian
+    
     frame = readFrame();
     [centroids, bboxes, mask] = detectObjects(frame);
     predictNewLocationsOfTracks();
@@ -21,42 +33,12 @@ while ~isDone(obj.reader)
     updateUnassignedTracks();
     deleteLostTracks();
     createNewTracks();
-    
-    if ~isempty(bboxes)
-               labels = {};
-        for j = 1:size(bboxes,1)
-            if (isempty(tracks(j).fst_check))
-                vel = 'Unknown';
-            else
-                realx = [tracks(j).centroid(1) tracks(j).oldCentroid(1)];
-                realy = [tracks(j).centroid(2) tracks(j).oldCentroid(2)];
-                [homx,homy] = transformPointsForward(params.H, realx, realy);
-                dist = sqrt( (homx(1)-homx(2))^2 + (homy(2)-homy(1))^2 );
-                distreal = (dist*params.est2real) / params.est;
-                vel = ((distreal*params.vel*3.6)+vel)/2;
-                
-            end
-            if (mod(v.FrameCount,5)==0)
-                     
-                text = strcat('Id:',num2str(tracks(j).id),' Vel:',num2str(mean([vel tracks(j).vel])) );
-                labels{j} = text;
-                tracks(j).vel = vel;
-            else
-                if isempty(text)
-                    labels{j}='';
-                else
-                    labels{j} = text;
-                end
-
-                
-            end
-            
-        end
-        rgbFrame = insertObjectAnnotation(rgbFrame, 'rectangle',bboxes, labels); 
-    end    
+    computeVelocities();
     
     displayTrackingResults();
 end
+
+
 
 
 %% Create System Objects
@@ -89,11 +71,12 @@ end
             'kalmanFilter', {}, ...
             'age', {}, ...
             'totalVisibleCount', {}, ...
-            'consecutiveInvisibleCount', {},...
-            'fst_check', {}, ...
-            'snd_check', {}, ...
-            'trd_check', {});
+            'consecutiveInvisibleCount', {}, ...
+            'time_first_mark', -1, ... % xian
+            'time_second_mark', -1, ... % xian
+            'speed', -1); % xian
     end
+
 
 %% Read a Video Frame
 % Read the next video frame from the video file.
@@ -133,6 +116,7 @@ end
 
         % Perform blob analysis to find connected components.
         [~, centroids, bboxes] = obj.blobAnalyser.step(mask);
+        
     end
 
 %% Predict New Locations of Existing Tracks
@@ -182,7 +166,6 @@ end
             detectionIdx = assignments(i, 2);
             
             %tracks(trackIdx).oldCentroid = tracks(trackIdx).centroid ;
-            if ()
             
             centroid = centroids(detectionIdx, :);
             bbox = bboxes(detectionIdx, :);

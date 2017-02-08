@@ -1,5 +1,7 @@
 
-function task_1_1_tracker_kalmanb()
+%% Motion-Based Multiple Object Tracking
+
+function task_1_1_tracker_kalman()
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
@@ -7,53 +9,33 @@ obj = setupSystemObjects();
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
+% >>>>>> xian
+set_reliable_tracks = [];
+vehicle_counter = 0;
+frame_count = 0;
+first_landmark = 116; %137;
+second_landmark = 386; %405;
+third_landmark
+fps = 29;
+% <<<<<<
+
 nextId = 1; % ID of the next track
 
 % Detect moving objects, and track them across video frames.
 while ~isDone(obj.reader)
+    frame_count = frame_count + 1; % xian
+    
     frame = readFrame();
     [centroids, bboxes, mask] = detectObjects(frame);
     predictNewLocationsOfTracks();
     [assignments, unassignedTracks, unassignedDetections] = ...
         detectionToTrackAssignment();
-
+    
     updateAssignedTracks();
     updateUnassignedTracks();
     deleteLostTracks();
     createNewTracks();
-    
-    if ~isempty(bboxes)
-               labels = {};
-        for j = 1:size(bboxes,1)
-            if (isempty(tracks(j).fst_check))
-                vel = 'Unknown';
-            else
-                realx = [tracks(j).centroid(1) tracks(j).oldCentroid(1)];
-                realy = [tracks(j).centroid(2) tracks(j).oldCentroid(2)];
-                [homx,homy] = transformPointsForward(params.H, realx, realy);
-                dist = sqrt( (homx(1)-homx(2))^2 + (homy(2)-homy(1))^2 );
-                distreal = (dist*params.est2real) / params.est;
-                vel = ((distreal*params.vel*3.6)+vel)/2;
-                
-            end
-            if (mod(v.FrameCount,5)==0)
-                     
-                text = strcat('Id:',num2str(tracks(j).id),' Vel:',num2str(mean([vel tracks(j).vel])) );
-                labels{j} = text;
-                tracks(j).vel = vel;
-            else
-                if isempty(text)
-                    labels{j}='';
-                else
-                    labels{j} = text;
-                end
-
-                
-            end
-            
-        end
-        rgbFrame = insertObjectAnnotation(rgbFrame, 'rectangle',bboxes, labels); 
-    end    
+    computeVelocities();
     
     displayTrackingResults();
 end
@@ -64,15 +46,18 @@ end
 % foreground objects, and displaying results.
 
     function obj = setupSystemObjects()
-        % Initialize Video I/O
-        % Create a video file reader.
+ 
         obj.reader = vision.VideoFileReader('parc_nova_icaria2.mp4');  % lpmayos
-        obj.videoPlayer = vision.VideoPlayer('Position', [20, 200, 700, 400]);
-        obj.maskPlayer = vision.VideoPlayer('Position', [740, 200, 700, 400]);
+        
+        % Create two video players, one to display the video,
+        % and one to display the foreground mask.
+        obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
+        obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
         
         obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
             'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
-       
+
+        
         obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
             'AreaOutputPort', true, 'CentroidOutputPort', true, ...
             'MinimumBlobArea', 200);
@@ -89,10 +74,10 @@ end
             'kalmanFilter', {}, ...
             'age', {}, ...
             'totalVisibleCount', {}, ...
-            'consecutiveInvisibleCount', {},...
-            'fst_check', {}, ...
-            'snd_check', {}, ...
-            'trd_check', {});
+            'consecutiveInvisibleCount', {}, ...
+            'time_first_mark', -1, ... % xian
+            'time_second_mark', -1, ... % xian
+            'speed', -1); % xian
     end
 
 %% Read a Video Frame
@@ -175,15 +160,12 @@ end
     end
 
 %% Update Assigned Tracks
-
+%
     function updateAssignedTracks()
         numAssignedTracks = size(assignments, 1);
         for i = 1:numAssignedTracks
             trackIdx = assignments(i, 1);
             detectionIdx = assignments(i, 2);
-            
-            %tracks(trackIdx).oldCentroid = tracks(trackIdx).centroid ;
-            
             centroid = centroids(detectionIdx, :);
             bbox = bboxes(detectionIdx, :);
             
@@ -218,20 +200,15 @@ end
     end
 
 %% Delete Lost Tracks
-% The |deleteLostTracks| function deletes tracks that have been invisible
-% for too many consecutive frames. It also deletes recently created tracks
-% that have been invisible for too many frames overall. 
+
 
     function deleteLostTracks()
         if isempty(tracks)
             return;
         end
         
-%         invisibleForTooLong = 20;
-%         ageThreshold = 8;
-%         visibilityThreshold = 0.6;
-        invisibleForTooLong = 2;%5;
-        ageThreshold = 8;%4;
+        invisibleForTooLong = 2;
+        ageThreshold = 8;
         visibilityThreshold = 0.6;
         
         % Compute the fraction of the track's age for which it was visible.
@@ -248,9 +225,6 @@ end
     end
 
 %% Create New Tracks
-% Create new tracks from unassigned detections. Assume that any unassigned
-% detection is a start of a new track. In practice, you can use other cues
-% to eliminate noisy detections, such as size, location, or appearance.
 
     function createNewTracks()
         centroids = centroids(unassignedDetections, :);
@@ -272,11 +246,11 @@ end
                 'kalmanFilter', kalmanFilter, ...
                 'age', 1, ...
                 'totalVisibleCount', 1, ...
-                'consecutiveInvisibleCount', 0,...
-                'fst_check', 0, ...
-                'snd_check', 0, ...
-                'trd_check', 0);
-
+                'consecutiveInvisibleCount', 0, ...
+                'time_first_mark', -1, ... % xian
+                'time_second_mark', -1, ... % xian
+                'speed', -1); % xian
+            
             % Add it to the array of tracks.
             tracks(end + 1) = newTrack;
             
@@ -285,10 +259,40 @@ end
         end
     end
 
+%% Compute velocities
+% We will annotate when a track reaches the first landmark, then when it
+% reaches the second one, and with this two data we will compute a speed.
+% xian
+
+    function computeVelocities()
+        if isempty(tracks)
+            return;
+        end
+        
+        for i = 1:length(tracks)
+            bottom_row = tracks(i).bbox(2) + tracks(i).bbox(4);
+            % Check first landmark:
+            if(bottom_row >= first_landmark && tracks(i).time_first_mark == -1)
+                % If the track appears after the first landmark, we do not
+                % take this track into account.
+                if(bottom_row <= first_landmark + 20)
+                    tracks(i).time_first_mark = frame_count;
+                end
+            end
+            % Check second landmark:
+            if(bottom_row >= second_landmark && tracks(i).time_second_mark == -1)
+                tracks(i).time_second_mark = frame_count;
+            end
+            % Compute velocity:
+            if(tracks(i).time_first_mark ~= -1 && tracks(i).time_second_mark ~= -1 && ...
+                    tracks(i).speed == -1)
+                tracks(i).speed = fps / (tracks(i).time_second_mark - tracks(i).time_first_mark) ...
+                                * 24 * 3.6;
+            end
+        end
+    end
+
 %% Display Tracking Results
-% The |displayTrackingResults| function draws a bounding box and label ID 
-% for each track on the video frame and the foreground mask. It then 
-% displays the frame and the mask in their respective video players. 
 
     function displayTrackingResults()
         % Convert the frame and the mask to uint8 RGB.
@@ -298,35 +302,81 @@ end
         minVisibleCount = 8;
         if ~isempty(tracks)
               
-            % Noisy detections tend to result in short-lived tracks.
-            % Only display tracks that have been visible for more than 
-            % a minimum number of frames.
-            reliableTrackInds = ...
+             reliableTrackInds = ...
                 [tracks(:).totalVisibleCount] > minVisibleCount;
             reliableTracks = tracks(reliableTrackInds);
             
             % Display the objects. If an object has not been detected
             % in this frame, display its predicted bounding box.
             if ~isempty(reliableTracks)
+                % >>>>>> xian
+                if(isempty(set_reliable_tracks))
+                    set_reliable_tracks = reliableTracks(:).id;
+                else
+                    for i = 1:length(reliableTracks)
+                        found = 0;
+                        for j = 1:length(set_reliable_tracks)
+                            if(set_reliable_tracks(j) == reliableTracks(i).id)
+                                found = 1;
+                            end
+                        end
+                        if(found == 0)
+                            set_reliable_tracks = [set_reliable_tracks, reliableTracks(i).id];
+                        end
+                    end
+                end
+                % <<<<<<
+            
                 % Get bounding boxes.
                 bboxes = cat(1, reliableTracks.bbox);
                 
                 % Get ids.
                 ids = int32([reliableTracks(:).id]);
                 
-                % Create labels for objects indicating the ones for 
-                % which we display the predicted rather than the actual 
-                % location.
-                labels = cellstr(int2str(ids'));
-                predictedTrackInds = ...
-                    [reliableTracks(:).consecutiveInvisibleCount] > 0;
-                isPredicted = cell(size(labels));
-                isPredicted(predictedTrackInds) = {' predicted'};
-                labels = strcat(labels, isPredicted);
+                % >>>>>> xian
+                % Change ids to make them consistent:
+                new_ids = zeros(size(ids));
+                for i = 1:length(ids)
+                    aux = set_reliable_tracks == ids(i);
+                    for j = 1:length(set_reliable_tracks)
+                        if(aux(j))
+                            new_ids(i) = j;
+                            break
+                        end
+                    end
+                end
+                new_ids = int32(new_ids);
+                vehicle_counter = new_ids(end);
+                % <<<<<<
+                
+                labels = cellstr(int2str(new_ids')); % xian
+
+                % >>>>>> xian
+                % Add the speed to the label:
+                for i = 1:length(reliableTracks)
+%                     if(reliableTracks(i).speed ~= -1)
+%                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
+%                     end
+                    if(reliableTracks(i).speed ~= -1)
+                    labels{i} = strcat(labels{i}, ' - ', ...
+                                    num2str(round(reliableTracks(i).speed,2)), ' km/h');
+                    end
+                end
+                % <<<<<<
                 
                 % Draw the objects on the frame.
                 frame = insertObjectAnnotation(frame, 'rectangle', ...
                     bboxes, labels);
+                
+                % Insert speeds at top left corner:
+                y = 1;
+                w_box = 100;
+                for i = 1:length(labels)
+                    frame = insertObjectAnnotation(frame, 'rectangle', ...
+                        [1, y, w_box, 1], labels{i}, ...
+                        'TextBoxOpacity', 0.9, 'FontSize', 12);
+                    y = y + 50;
+                end
                 
                 % Draw the objects on the mask.
                 mask = insertObjectAnnotation(mask, 'rectangle', ...
@@ -337,6 +387,9 @@ end
         % Display the mask and the frame.
         obj.maskPlayer.step(mask);        
         obj.videoPlayer.step(frame);
+        
+        % Show total number of cars found:
+        fprintf('Vehicle counter: %i.\n', vehicle_counter)
     end
 
 %% Summary
