@@ -57,6 +57,7 @@ frame_count = 0;
 first_landmark = 137;
 second_landmark = 405;
 fps = 30;
+speedlimit = 80;
 % <<<<<<
 
 nextId = 1; % ID of the next track
@@ -515,8 +516,8 @@ end
 %                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
 %                     end
                     if(reliableTracks(i).speed ~= -1)
-                    labels{i} = strcat(labels{i}, ' - ', ...
-                                    num2str(round(reliableTracks(i).speed,2)), ' km/h');
+                    labels{i} = [labels{i}, ' - ', ...
+                                    num2str(round(reliableTracks(i).speed,2)), ' km/h'];
                     end
                 end
                 % <<<<<<
@@ -526,13 +527,18 @@ end
                     bboxes, labels);
                 
                 % Insert speeds at top left corner:
-                y = 1;
-                w_box = 100;
-                for i = 1:length(labels)
+                w_box = 110;
+                for i = 1:length(reliableTracks)
+                    if(reliableTracks(i).speed == -1)
+                        color = 'yellow';
+                    elseif(reliableTracks(i).speed > speedlimit)
+                        color = 'red';
+                    else
+                        color = 'green';
+                    end
                     frame = insertObjectAnnotation(frame, 'rectangle', ...
-                        [1, y, w_box, 1], labels{i}, ...
-                        'TextBoxOpacity', 0.9, 'FontSize', 12);
-                    y = y + 50;
+                        [1, 1+(i-1)*50, w_box, 1], labels{i}, ...
+                        'TextBoxOpacity', 0.9, 'FontSize', 12, 'Color', color);
                 end
                 
                 % Draw the objects on the mask.

@@ -57,6 +57,7 @@ frame_count = 0;
 first_landmark = 137;
 second_landmark = 405;
 fps = 30;
+speedlimit = 80;
 % <<<<<<
 
 nextId = 1; % ID of the next track
@@ -96,8 +97,8 @@ end
         
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
-        obj.videoPlayer = vision.VideoPlayer('Position', [20, 200, 700, 400]);
-        obj.maskPlayer = vision.VideoPlayer('Position', [740, 200, 700, 400]);
+        obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
+        obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
         
         % Create system objects for foreground detection and blob analysis
         
@@ -416,7 +417,11 @@ end
             bottom_row = tracks(i).bbox(2) + tracks(i).bbox(4);
             % Check first landmark:
             if(bottom_row >= first_landmark && tracks(i).time_first_mark == -1)
-                tracks(i).time_first_mark = frame_count;
+                % If the track appears after the first landmark, we do not
+                % take this track into account.
+                if(bottom_row <= first_landmark + 20)
+                    tracks(i).time_first_mark = frame_count;
+                end
             end
             % Check second landmark:
             if(bottom_row >= second_landmark && tracks(i).time_second_mark == -1)
@@ -425,8 +430,8 @@ end
             % Compute velocity:
             if(tracks(i).time_first_mark ~= -1 && tracks(i).time_second_mark ~= -1 && ...
                     tracks(i).speed == -1)
-                tracks(i).speed = (tracks(i).time_second_mark - tracks(i).time_first_mark) ...
-                                / fps * 50 ;
+                tracks(i).speed = fps / (tracks(i).time_second_mark - tracks(i).time_first_mark) ...
+                                * 24 * 3.6;
             end
         end
     end
@@ -499,11 +504,11 @@ end
                 % location.
 %                 labels = cellstr(int2str(ids'));
                 labels = cellstr(int2str(new_ids')); % xian
-                predictedTrackInds = ...
-                    [reliableTracks(:).consecutiveInvisibleCount] > 0;
-                isPredicted = cell(size(labels));
-                isPredicted(predictedTrackInds) = {' predicted'};
-                labels = strcat(labels, isPredicted);
+%                 predictedTrackInds = ...
+%                     [reliableTracks(:).consecutiveInvisibleCount] > 0;
+%                 isPredicted = cell(size(labels));
+%                 isPredicted(predictedTrackInds) = {' predicted'};
+%                 labels = strcat(labels, isPredicted);
                 % >>>>>> xian
                 % Add the speed to the label:
                 for i = 1:length(reliableTracks)
@@ -511,7 +516,7 @@ end
 %                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
 %                     end
                     if(reliableTracks(i).speed ~= -1)
-                    labels{i} = strcat(labels{i}, ' - ', ...
+                    labels{i} = strcat(labels{i}, ' - ', ' ', ...
                                     num2str(round(reliableTracks(i).speed,2)), ' km/h');
                     end
                 end
@@ -520,6 +525,21 @@ end
                 % Draw the objects on the frame.
                 frame = insertObjectAnnotation(frame, 'rectangle', ...
                     bboxes, labels);
+                
+                % Insert speeds at top left corner:
+                w_box = 100;
+                for i = 1:length(reliableTracks)
+                    if(reliableTracks(i).speed == -1)
+                        color = 'yellow';
+                    elseif(reliableTracks(i).speed > speedlimit)
+                        color = 'red';
+                    else
+                        color = 'green';
+                    end
+                    frame = insertObjectAnnotation(frame, 'rectangle', ...
+                        [1, 1+(i-1)*50, w_box, 1], labels{i}, ...
+                        'TextBoxOpacity', 0.9, 'FontSize', 12, 'Color', color);
+                end
                 
                 % Draw the objects on the mask.
                 mask = insertObjectAnnotation(mask, 'rectangle', ...
