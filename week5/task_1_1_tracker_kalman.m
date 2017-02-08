@@ -50,6 +50,9 @@ first_landmark = -1;
 second_landmark = -1;
 fps = -1;
 speedlimit = -1;
+invisibleForTooLong = -1;
+ageThreshold = -1;
+visibilityThreshold = -1;
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
@@ -112,13 +115,17 @@ end
                 second_landmark = 386;
                 fps = 30;
                 speedlimit = 80;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 5;
+                ageThreshold = 4;
+                visibilityThreshold = 0.6;
 
             case 'highway'
                 % Stauffer & Grimson options:
-                NumGaussians           = 2;
-                NumTrainingFrames      = 25;
+                NumGaussians           = 3;
+                NumTrainingFrames      = 100;
                 LearningRate           = 0.0025;
-                MinimumBackgroundRatio = 0.9;
+                MinimumBackgroundRatio = 0.6;
                 % Blob analysis options:
                 MinimumBlobArea = 200;
                 % Name of the video file:
@@ -130,24 +137,32 @@ end
                 second_landmark = 386;
                 fps = 30;
                 speedlimit = 120;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 5;
+                ageThreshold = 5;
+                visibilityThreshold = 0.6;
 
             case 'traffic'
                 % Stauffer & Grimson options:
                 NumGaussians           = 2;
-                NumTrainingFrames      = 25;
-                LearningRate           = 0.0025;
-                MinimumBackgroundRatio = 0.9;
+                NumTrainingFrames      = 10;
+                LearningRate           = 0.025;
+                MinimumBackgroundRatio = 0.8;
                 % Blob analysis options:
                 MinimumBlobArea = 200;
                 % Name of the video file:
-                videoname = 'traffic.avi';
+                videoname = 'traffic_stabilized.avi';
                 % Name of the mask file (for the region of interest):
-                roiname = 'mask_roi_traffic.jpg';
+                roiname = 'mask_roi_traffic_stabilized.jpg';
                 % Other parameters:
                 first_landmark = 116;
                 second_landmark = 386;
                 fps = 30;
                 speedlimit = 80;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 2;
+                ageThreshold = 4;
+                visibilityThreshold = 0.6;
         end
         
         % Create a video file reader.
@@ -253,7 +268,6 @@ end
         % % lpmayos: last week we applied this operators
         mask = imopen(mask, strel('square', 3));
         mask = imfill(mask, 4, 'holes');
-% %         mask = imopen(mask, strel('square', 10));
         mask = imclose(mask, strel('square', 10));
         mask = imfill(mask, 4, 'holes');
         
@@ -263,12 +277,6 @@ end
         mask1(index1:end,:) = bwareaopen(mask1(index1:end,:), 200);
         
         mask=logical(mask1);
-        
-        % Apply morphological operations to remove noise and fill in holes.
-%         mask = imopen(mask, strel('rectangle', [3,3]));
-% %         mask = imclose(mask, strel('rectangle', [15, 15]));
-%         mask = imclose(mask, strel('rectangle', [5, 5])); 
-%         mask = imfill(mask, 'holes');
 
         % lpmayos: Leave out all the detections outside the Region Of Interest:
         mask = logical(mask .* roi);
@@ -399,13 +407,6 @@ end
         if isempty(tracks)
             return;
         end
-        
-%         invisibleForTooLong = 20;
-%         ageThreshold = 8;
-%         visibilityThreshold = 0.6;
-        invisibleForTooLong = 5;
-        ageThreshold = 4;
-        visibilityThreshold = 0.6;
         
         % Compute the fraction of the track's age for which it was visible.
         ages = [tracks(:).age];
