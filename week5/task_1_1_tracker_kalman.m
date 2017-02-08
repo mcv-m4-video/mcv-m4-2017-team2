@@ -50,6 +50,9 @@ obj = setupSystemObjects();
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
+set_reliable_tracks = []; % xian
+vehicle_counter = 0; % xian
+
 nextId = 1; % ID of the next track
 
 % Detect moving objects, and track them across video frames.
@@ -407,16 +410,51 @@ end
             % Display the objects. If an object has not been detected
             % in this frame, display its predicted bounding box.
             if ~isempty(reliableTracks)
+                % >>>>>> xian
+                if(isempty(set_reliable_tracks))
+                    set_reliable_tracks = reliableTracks(:).id;
+                else
+                    for i = 1:length(reliableTracks)
+                        found = 0;
+                        for j = 1:length(set_reliable_tracks)
+                            if(set_reliable_tracks(j) == reliableTracks(i).id)
+                                found = 1;
+                            end
+                        end
+                        if(found == 0)
+                            set_reliable_tracks = [set_reliable_tracks, reliableTracks(i).id];
+                        end
+                    end
+                end
+                % <<<<<<
+            
                 % Get bounding boxes.
                 bboxes = cat(1, reliableTracks.bbox);
                 
                 % Get ids.
                 ids = int32([reliableTracks(:).id]);
                 
+                % >>>>>> xian
+                % Change ids to make them consistent:
+                new_ids = zeros(size(ids));
+                for i = 1:length(ids)
+                    aux = set_reliable_tracks == ids(i);
+                    for j = 1:length(set_reliable_tracks)
+                        if(aux(j))
+                            new_ids(i) = j;
+                            break
+                        end
+                    end
+                end
+                new_ids = int32(new_ids);
+                vehicle_counter = new_ids(end);
+                % <<<<<<
+                
                 % Create labels for objects indicating the ones for 
                 % which we display the predicted rather than the actual 
                 % location.
-                labels = cellstr(int2str(ids'));
+%                 labels = cellstr(int2str(ids'));
+                labels = cellstr(int2str(new_ids')); % xian
                 predictedTrackInds = ...
                     [reliableTracks(:).consecutiveInvisibleCount] > 0;
                 isPredicted = cell(size(labels));
@@ -436,6 +474,9 @@ end
         % Display the mask and the frame.
         obj.maskPlayer.step(mask);        
         obj.videoPlayer.step(frame);
+        
+        % Show total number of cars found:
+        fprintf('Vehicle counter: %i.\n', vehicle_counter)
     end
 
 %% Summary
