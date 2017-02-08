@@ -1,4 +1,4 @@
-function task_1_2_other_tracker(  )
+function task_1_2_mean_shift()
 % mean shift object tracking
 % source: team 1 past year
 
