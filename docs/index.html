@@ -97,7 +97,9 @@
                 <div class="col-md-6">
                     <h2 class="section-heading">Overview of the system</h2>
                     <!-- TODO improve text -->
-                    <p class="text-muted">Road traffic detection and monitorization is an important problem in object tracking. In this paper we tackle the problem of tracking vehicles that are moving along a road. We propose a model based on foreground segmentation using and adaptative gaussian grayscale model, with postprocessing hole filling, area filtering and morphological closing. Then, after a block-matching based stabilization, we use a Kalman filter and a particle filter to detect the vehicles, with a speed estimation based on linear regression. Our model achieves good results both in background segmentation, with an average AUC of 0.83, and in traffic tracking, with great visual results both in <b>vehicle counting</b> and <b>speed estimation</b>.</h3>
+                    <br/><h4 class="service-heading">By 2025, it is predicted that 6.2 billion private motorized trips will be made all around the world every day. This means more roads, more users and many more security concerns. Road traffic monitoring is not just a necessity, but a huge challenge, and we, Team 2!, have just the right solution.</h4>
+
+                    <h4 class="service-heading">Our Video Surveillance System for Traffic Monitoring is able to track moving vehicles along roads, to count them and to estimate their speed, raising an alarm if any vehicles are off limits. There is no need of any special tools, just install a regular camera, record the road and let the system alert you if anything unusual happens!</h4>
                 </div>
                 <div class="col-md-6">
                     <div class="embed-responsive embed-responsive-4by3">
@@ -115,7 +117,7 @@
             <div class="row">
                 <div class="col-lg-12 text-center">
                     <h2 class="section-heading">Insights</h2>
-                    <h3 class="section-subheading text-muted">These are thse steps of the process</h3>
+                    <h3 class="section-subheading text-muted">These are the steps of the process</h3>
                 </div>
             </div>
             <div class="row">
@@ -128,11 +130,10 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Step 1</h4>
-                                    <h4 class="subheading">Background estimation</h4>
+                                    <h4 class="subheading">Get started!</h4>
                                 </div>
                                 <div class="timeline-body">
-                                    <!-- TODO change text -->
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <p class="text-muted">Do you want to monitor a road? Just install a regular camera to feed the video to our system and provide us with a few details. You are good to go! The system will keep the count passing vehicles and will sound an alarm if any vehicle exceeds the speed limit.</p>
                                 </div>
                             </div>
                         </li>
@@ -143,11 +144,10 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Step 2</h4>
-                                    <h4 class="subheading">Foreground segmentation</h4>
+                                    <h4 class="subheading">Video stabilization</h4>
                                 </div>
                                 <div class="timeline-body">
-                                    <!-- TODO change text -->
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <p class="text-muted">The system performs <b>Target Tracking Video Stabilization</b>, where we first define the target to track and we establish a dynamic search region, whose position is determined by the last known target location. We then search for the target only within this search region, which reduces the number of computations required to find the target. In each subsequent video frame, we determine how much the target has moved relative to the previous frame. We use this information to remove unwanted translational camera motions and generate a stabilized video.</p>
                                 </div>
                             </div>
                         </li>
@@ -158,11 +158,10 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Step 3</h4>
-                                    <h4 class="subheading">Video stabilization</h4>
+                                    <h4 class="subheading">Foreground detection</h4>
                                 </div>
                                 <div class="timeline-body">
-                                    <!-- TODO change text -->
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <p class="text-muted">The foreground detector is used to segment moving objects from the background. The system uses a background subtraction algorithm based on <b>Gaussian mixture models</b>. Morphological operations are applied to the resulting foreground mask to eliminate noise.</p>
                                 </div>
                             </div>
                         </li>
@@ -173,11 +172,11 @@
                             <div class="timeline-panel">
                                 <div class="timeline-heading">
                                     <h4>Step 4</h4>
-                                    <h4 class="subheading">Region tracking</h4>
+                                    <h4 class="subheading">Vehicle tracking</h4>
                                 </div>
                                 <div class="timeline-body">
                                     <!-- TODO change text -->
-                                    <p class="text-muted">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sunt ut voluptatum eius sapiente, totam reiciendis temporibus qui quibusdam, recusandae sit vero unde, sed, incidunt et ea quo dolore laudantium consectetur!</p>
+                                    <p class="text-muted">Groups of connected pixels are detected using <b>blob analysis</b>, which are likely to correspond to moving objects. The association of detections to the same object is based solely on motion, estimated by a <b>Kalman filter</b>, an optimal method for tracking linear dynamical models under the assumption of Gaussian noise. The filter is used to predict the track's location in each frame, and determine the likelihood of each detection being assigned to each track.</p>
                                 </div>
                             </div>
                         </li>
