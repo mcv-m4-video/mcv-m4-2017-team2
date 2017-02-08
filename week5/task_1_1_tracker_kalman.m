@@ -42,11 +42,21 @@
 % <matlab:helpview(fullfile(docroot,'toolbox','matlab','matlab_prog','matlab_prog.map'),'nested_functions') nested functions> 
 % below.
 
-function task_1_1_tracker_kalman()
+function task_1_1_tracker_kalman(video)
+% video can be either 'icaria', 'highway' or 'traffic'.
+
+% Initialize this variables to give them a global scope:
+first_landmark = -1;
+second_landmark = -1;
+fps = -1;
+speedlimit = -1;
+invisibleForTooLong = -1;
+ageThreshold = -1;
+visibilityThreshold = -1;
 
 % Create system objects used for reading video, detecting moving objects,
 % and displaying the results.
-obj = setupSystemObjects();
+obj = setupSystemObjects(video);
 
 tracks = initializeTracks(); % Create an empty array of tracks.
 
@@ -54,10 +64,6 @@ tracks = initializeTracks(); % Create an empty array of tracks.
 set_reliable_tracks = [];
 vehicle_counter = 0;
 frame_count = 0;
-first_landmark = 116;
-second_landmark = 386;
-fps = 29;
-speedlimit = 80;
 % <<<<<<
 
 nextId = 1; % ID of the next track
@@ -67,7 +73,7 @@ while ~isDone(obj.reader)
     frame_count = frame_count + 1; % xian
     
     frame = readFrame();
-    [centroids, bboxes, mask] = detectObjects(frame);
+    [centroids, bboxes, mask] = detectObjects(frame, obj.roi);
     predictNewLocationsOfTracks();
     [assignments, unassignedTracks, unassignedDetections] = ...
         detectionToTrackAssignment();
@@ -86,39 +92,109 @@ end
 % Create System objects used for reading the video frames, detecting
 % foreground objects, and displaying results.
 
-    function obj = setupSystemObjects()
+    function obj = setupSystemObjects(video)
         % Initialize Video I/O
         % Create objects for reading a video from a file, drawing the tracked
         % objects in each frame, and playing the video.
         
-        % Create a video file reader.
-        % obj.reader = vision.VideoFileReader('atrium.avi');
-        obj.reader = vision.VideoFileReader('traffic.avi');  % lpmayos
+        switch video
+            case 'icaria'
+                % Stauffer & Grimson options:
+                NumGaussians           = 2;
+                NumTrainingFrames      = 25;
+                LearningRate           = 0.0025;
+                MinimumBackgroundRatio = 0.9;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'parc_nova_icaria2.mp4';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_parc_nova_icaria2.png';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 80;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 5;
+                ageThreshold = 4;
+                visibilityThreshold = 0.6;
+
+            case 'highway'
+                % Stauffer & Grimson options:
+                NumGaussians           = 3;
+                NumTrainingFrames      = 100;
+                LearningRate           = 0.0025;
+                MinimumBackgroundRatio = 0.6;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'highway.avi';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_highway.jpg';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 120;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 5;
+                ageThreshold = 5;
+                visibilityThreshold = 0.6;
+
+            case 'traffic'
+                % Stauffer & Grimson options:
+                NumGaussians           = 2;
+                NumTrainingFrames      = 10;
+                LearningRate           = 0.025;
+                MinimumBackgroundRatio = 0.8;
+                % Blob analysis options:
+                MinimumBlobArea = 200;
+                % Name of the video file:
+                videoname = 'traffic_stabilized.avi';
+                % Name of the mask file (for the region of interest):
+                roiname = 'mask_roi_traffic_stabilized.jpg';
+                % Other parameters:
+                first_landmark = 116;
+                second_landmark = 386;
+                fps = 30;
+                speedlimit = 80;
+                % Options for deleting lost tracks:
+                invisibleForTooLong = 2;
+                ageThreshold = 4;
+                visibilityThreshold = 0.6;
+        end
         
+        % Create a video file reader.
+        obj.reader = vision.VideoFileReader(videoname);  % lpmayos
+
         % Create two video players, one to display the video,
         % and one to display the foreground mask.
         obj.videoPlayer = vision.VideoPlayer('Position', [20, 100, 700, 550]);
         obj.maskPlayer = vision.VideoPlayer('Position', [740, 100, 700, 550]);
-        
+
         % Create system objects for foreground detection and blob analysis
-        
+
         % The foreground detector is used to segment moving objects from
         % the background. It outputs a binary mask, where the pixel value
         % of 1 corresponds to the foreground and the value of 0 corresponds
         % to the background. 
         % lpmayos: added params from last week
-        obj.detector = vision.ForegroundDetector('NumGaussians', 2, ...
-            'NumTrainingFrames', 25, 'LearningRate', 0.0025, 'MinimumBackgroundRatio', 0.9);
- 
+        obj.detector = vision.ForegroundDetector('NumGaussians', NumGaussians, ...
+            'NumTrainingFrames', NumTrainingFrames, 'LearningRate', ...
+            LearningRate, 'MinimumBackgroundRatio', MinimumBackgroundRatio);
+
         % Connected groups of foreground pixels are likely to correspond to moving
         % objects.  The blob analysis system object is used to find such groups
         % (called 'blobs' or 'connected components'), and compute their
         % characteristics, such as area, centroid, and the bounding box.
-        
+
         obj.blobAnalyser = vision.BlobAnalysis('BoundingBoxOutputPort', true, ...
             'AreaOutputPort', true, 'CentroidOutputPort', true, ...
-            'MinimumBlobArea', 200);
-%             'MinimumBlobArea', 300);
+            'MinimumBlobArea', MinimumBlobArea);
+
+        roi = imread(roiname);
+        obj.roi = double(roi(:,:,1) > 0.5);
     end
 
 %% Initialize Tracks
@@ -184,7 +260,7 @@ end
 % It then performs morphological operations on the resulting binary mask to
 % remove noisy pixels and to fill the holes in the remaining blobs.  
 
-    function [centroids, bboxes, mask] = detectObjects(frame)
+    function [centroids, bboxes, mask] = detectObjects(frame, roi)
         
         % Detect foreground.
         mask = obj.detector.step(frame);
@@ -192,7 +268,6 @@ end
         % % lpmayos: last week we applied this operators
         mask = imopen(mask, strel('square', 3));
         mask = imfill(mask, 4, 'holes');
-% %         mask = imopen(mask, strel('square', 10));
         mask = imclose(mask, strel('square', 10));
         mask = imfill(mask, 4, 'holes');
         
@@ -202,16 +277,8 @@ end
         mask1(index1:end,:) = bwareaopen(mask1(index1:end,:), 200);
         
         mask=logical(mask1);
-        
-        % Apply morphological operations to remove noise and fill in holes.
-%         mask = imopen(mask, strel('rectangle', [3,3]));
-% %         mask = imclose(mask, strel('rectangle', [15, 15]));
-%         mask = imclose(mask, strel('rectangle', [5, 5])); 
-%         mask = imfill(mask, 'holes');
 
         % lpmayos: Leave out all the detections outside the Region Of Interest:
-        roi = imread('mask_roi_parc_nova_icaria2.png');
-        roi = double(roi(:,:,1) > 0.5);
         mask = logical(mask .* roi);
 
         % Perform blob analysis to find connected components.
@@ -340,13 +407,6 @@ end
         if isempty(tracks)
             return;
         end
-        
-%         invisibleForTooLong = 20;
-%         ageThreshold = 8;
-%         visibilityThreshold = 0.6;
-        invisibleForTooLong = 5;
-        ageThreshold = 4;
-        visibilityThreshold = 0.6;
         
         % Compute the fraction of the track's age for which it was visible.
         ages = [tracks(:).age];
@@ -512,12 +572,9 @@ end
                 % >>>>>> xian
                 % Add the speed to the label:
                 for i = 1:length(reliableTracks)
-%                     if(reliableTracks(i).speed ~= -1)
-%                         labels(i) = strcat(labels(i), num2str(reliableTracks(i).speed));
-%                     end
                     if(reliableTracks(i).speed ~= -1)
-                    labels{i} = [labels{i}, ' - ', ...
-                                    num2str(round(reliableTracks(i).speed,2)), ' km/h'];
+                        labels{i} = [labels{i}, ' - ', ...
+                                        num2str(round(reliableTracks(i).speed)), ' km/h'];
                     end
                 end
                 % <<<<<<
@@ -537,7 +594,7 @@ end
                         color = 'green';
                     end
                     frame = insertObjectAnnotation(frame, 'rectangle', ...
-                        [1, 1+(i-1)*50, w_box, 1], labels{i}, ...
+                        [1, 1+i*30, w_box, 1], labels{i}, ...
                         'TextBoxOpacity', 0.9, 'FontSize', 12, 'Color', color);
                 end
                 
@@ -552,7 +609,7 @@ end
         obj.videoPlayer.step(frame);
         
         % Show total number of cars found:
-        fprintf('Vehicle counter: %i.\n', vehicle_counter)
+%         fprintf('Vehicle counter: %i.\n', vehicle_counter)
     end
 
 %% Summary
