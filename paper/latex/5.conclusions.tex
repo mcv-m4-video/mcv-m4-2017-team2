@@ -1,0 +1,6 @@
+\section{Conclusions}
+\label{sec:conclusions}
+
+This paper has shown a complete road traffic monitoring system in four stages: video stabilization, background modeling and foreground segmentation, vehicle tracking and speed estimation. We showed a robust and stable method able to work in real-time, which requires only the Stauffer and Grimson parameters ---robust to different cameras and different scenes---, a known distance and the camera frame rate for speed estimation and the speed limit to raise the appropriate alarm whenever any vehicle exceeds it. As it is based in Stauffer and Grimson \cite{stauffer1999adaptive}, the system deals with slow lighting changes by progressively adapting the values of the Gaussians, and it also deals with multi-modal distributions caused by shadows, swaying branches and other features of the real world which are often troublesome. Furthermore, it is able to quickly recover from occlusions and track loss.\\
+
+\noindent The system has been successfully used to track vehicles in three different real traffic sequences in outdoor environments, involving different cameras and different lighting conditions, raising and alarm whenever any vehicle exceed the speed limit, and it achieves our goals of real time road traffic monitoring.

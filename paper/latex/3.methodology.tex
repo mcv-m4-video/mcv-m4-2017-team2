@@ -1,0 +1,25 @@
+\section{Methodology}
+\label{sec:method}
+
+Our main goal is to create a robust video surveillance road traffic monitoring system able to track vehicles, count them and estimate their speed, raising an alarm if any of them exceeds the speed limit established for the road.\\
+
+\noindent Our system is based entirely on motion, and its complete pipeline is described in Fig. \ref{fig:pipeline}. The first step, in case the sequence is jittery, is to perform video stabilization using Target Tracking. Then, the foreground is segmented using Stauffer \& Grimson algorithm \cite{stauffer1999adaptive}, and morphological operations are applied to improve the segmentation. Once a series of blobs have been detected on each frame, a Kalman Filter is used to track them along the video sequence. Finally, using some knowledge of the scene geometry, the vehicles are counted and their speeds are estimated, raising an alarm if any of them exceeds the ---known--- limit.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.9\linewidth, height = 3cm]{figures/pipeline}
+\caption{Video Surveillance for Road Traffic Monitoring System pipeline.}
+\label{fig:pipeline}
+\end{figure}
+
+\noindent The whole system has been implemented in Matlab, and the code is available at our Github repository \footnote{\url{https://github.com/mcv-m4-video/mcv-m4-2017-team2}}.
+
+\input{latex/3.1.stabilization.tex}
+\input{latex/3.2.background_subs.tex}
+\input{latex/3.3.tracking.tex}
+\input{latex/3.4.speed.tex}
+
+
+
+
+
